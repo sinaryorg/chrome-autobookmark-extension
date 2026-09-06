@@ -32,6 +32,20 @@ AutoBookmark is built using standard Chromium Manifest V3 and is **100% compatib
 
 ---
 
+## 📸 Preview & Screenshots
+
+### 1. Auto-Hiding Floating Bookmark Bar
+*Reveals your bookmarks and nested folders smoothly on hover, then gracefully hides away to preserve full-screen viewing space:*
+
+![AutoBookmark Floating Bar](icons/screenshot2_1280x800.png)
+
+### 2. Customization & Themes
+*Fine-tune hover proximity, auto-hide timing, toggle pin shortcut (<kbd>Alt + B</kbd>), and switch between 4 themes (Dark Glass, Modern Light, AMOLED Black, Classic Chrome):*
+
+![AutoBookmark Settings & Themes](icons/screenshot1_1280x800.png)
+
+---
+
 ## 🚀 How to Get AutoBookmark
 
 > [!NOTE]
