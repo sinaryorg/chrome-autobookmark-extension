@@ -92,6 +92,29 @@ Every release provides two dedicated packages tailored for specific browser engi
 
 ---
 
+## 💡 Essential Pro Tip: Hide Your Browser's Default Bookmark Bar
+
+To get the full immersive experience and **reclaim 100% of your vertical screen real estate**, turn off your browser's default static bookmark bar.
+
+AutoBookmark replaces the static bar by floating smoothly into view **only when you hover near the top edge**!
+
+### ⚡ Quick Shortcut (All Browsers)
+Press **<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>** (Windows / Linux) or **<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>** (macOS) to instantly toggle off the default bar.
+
+### 🛠️ Browser-Specific Step-by-Step Guide
+
+| Browser | How to Hide the Default Bookmark Bar |
+| :--- | :--- |
+| **Google Chrome** | Press <kbd>Ctrl+Shift+B</kbd>, or click `⋮` (Three dots) > **Bookmarks and lists** > uncheck **"Show bookmarks bar"**. |
+| **Microsoft Edge** | Press <kbd>Ctrl+Shift+B</kbd>, or click `...` (Three dots) > **Favorites** > click `...` at top > select **Hide favorites bar** > **Never**. |
+| **Mozilla Firefox** | Press <kbd>Ctrl+Shift+B</kbd>, or right-click any blank space in the tab bar > **Bookmarks Toolbar** > select **"Never Show"**. |
+| **Opera & Opera GX** | Press <kbd>Alt+P</kbd> (Settings) > search **"Bookmarks"** > toggle off **"Show bookmarks bar"**. |
+| **Brave Browser** | Press <kbd>Ctrl+Shift+B</kbd>, or go to **Settings** > **Appearance** > toggle off **"Show bookmarks bar"**. |
+
+Once hidden, simply glide your mouse cursor to the top edge of any page to summon your floating bookmarks on demand!
+
+---
+
 ## ⌨️ Keyboard Shortcuts
 
 | Shortcut | Action |
