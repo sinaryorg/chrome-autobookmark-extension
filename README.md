@@ -1,6 +1,6 @@
 # AutoBookmark — by Sinary
 
-> A smart, auto-hiding floating bookmark bar for **Chromium-based browsers** (Manifest V3) crafted by the **[sinary.org](https://sinary.org/)** developer team.
+> A smart, auto-hiding floating bookmark bar for **Chrome, Edge, Firefox, Brave, and Opera** crafted by the **[sinary.org](https://sinary.org/)** developer team.
 
 ![AutoBookmark Banner](icons/icon128.png)
 
@@ -8,12 +8,13 @@
 
 ## 🌐 Browser Compatibility
 
-AutoBookmark is built using standard Chromium Manifest V3 and is **100% compatible with all major Chromium-based browsers**:
+AutoBookmark is built with cross-browser compatibility and runs natively across all modern desktop browsers:
 
 - ✅ **Google Chrome**
 - ✅ **Microsoft Edge**
-- ✅ **Brave Browser**
+- ✅ **Mozilla Firefox**
 - ✅ **Opera & Opera GX**
+- ✅ **Brave Browser**
 - ✅ **Vivaldi**
 - ✅ **Arc Browser**
 
@@ -48,38 +49,46 @@ AutoBookmark is built using standard Chromium Manifest V3 and is **100% compatib
 
 ## 🚀 How to Get AutoBookmark
 
-> [!NOTE]
-> **Why isn't AutoBookmark on the Chrome Web Store?**  
-> Google charges an upfront developer registration fee to publish on the Chrome Web Store. To keep AutoBookmark 100% free and open-source without passing costs onto our users, we distribute AutoBookmark directly via **GitHub Releases** and the official **Microsoft Edge Add-ons Store** (which works in Chrome too!).
+You can install AutoBookmark using either the official stores or directly from GitHub Releases:
 
-You can install AutoBookmark using either method below:
+### Method 1: Official Browser Stores (Recommended — 1-Click Install & Auto-Updates)
 
-### Method 1: Microsoft Edge Add-ons Store (Recommended — 1-Click Install & Auto-Updates)
+| Store | Compatible Browsers | Status |
+| :--- | :--- | :--- |
+| **Microsoft Edge Add-ons** | Edge, Chrome, Brave | In Review ([View Store](https://microsoftedge.microsoft.com/addons)) |
+| **Opera Add-ons** | Opera & Opera GX | In Review ([View Store](https://addons.opera.com)) |
+| **Mozilla Firefox Add-ons (AMO)** | Firefox | In Review ([View Store](https://addons.mozilla.org)) |
 
-The easiest way to install and receive automatic updates. **Works on Edge, Chrome, Brave, and Opera**:
-
-1. Visit the **[AutoBookmark Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons)** store listing.
-2. Click **Get** (or **Add to Chrome** / **Add to Brave**).
-   - *If installing in Google Chrome:* Chrome will prompt `"Allow extensions from other stores"`. Click **Allow**, then click **Add to Chrome**.
-3. Done! The extension will automatically stay updated in the background.
+*Note: Microsoft Edge Add-ons can also be installed directly into Google Chrome and Brave by clicking "Allow extensions from other stores".*
 
 ---
 
-### Method 2: Direct GitHub Release (No Store Required)
+### Method 2: Direct GitHub Releases (No Store Required)
 
-For complete independence from any store:
+Every release provides two dedicated packages tailored for specific browser engines:
 
-1. Download **`AutoBookmark.zip`** from the latest release:  
-   👉 **[Download Latest GitHub Release](https://github.com/sinaryorg/chrome-autobookmark-extension/releases/latest)**
+👉 **[Download Latest GitHub Release](https://github.com/sinaryorg/chrome-autobookmark-extension/releases/latest)**
+
+#### 📦 For Chrome, Edge, Brave, Opera, Vivaldi (`AutoBookmark.zip`)
+1. Download **`AutoBookmark.zip`** from the latest release.
 2. Unzip `AutoBookmark.zip` into a folder on your computer.
-3. Open your browser's extension management page:
+3. Open your browser's extension page:
    - **Chrome**: `chrome://extensions`
    - **Edge**: `edge://extensions`
    - **Brave**: `brave://extensions`
    - **Opera**: `opera://extensions`
 4. Toggle ON **Developer mode** (top-right corner switch).
-5. Click **"Load unpacked"** (top-left) and select the unzipped folder.
-6. Done! Hover near the top edge of any website to use your new bookmark bar.
+5. Click **"Load unpacked"** (top-left) and select the extracted folder.
+
+#### 🦊 For Mozilla Firefox (`AutoBookmark-firefox.zip`)
+1. Download **`AutoBookmark-firefox.zip`** from the latest release.
+2. Open Firefox and navigate to:
+   ```text
+   about:debugging#/runtime/this-firefox
+   ```
+3. Click **"Load Temporary Add-on..."** (top-right).
+4. Select the downloaded `AutoBookmark-firefox.zip` file directly (or extract and select its `manifest.json`).
+5. Done! The AutoBookmark bar is active immediately on Firefox.
 
 ---
 
