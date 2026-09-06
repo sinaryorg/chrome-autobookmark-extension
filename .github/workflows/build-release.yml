@@ -16,24 +16,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Extension ZIP Bundle
-        run: |
-          mkdir -p dist
-          zip -r dist/AutoBookmark.zip \
-            manifest.json \
-            background.js \
-            content.js \
-            content.css \
-            popup.html \
-            popup.js \
-            popup.css \
-            sinary-logo.svg \
-            icons/
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Upload Release Asset
+      - name: Create Extension ZIP Bundles (Chromium & Firefox)
+        run: |
+          python package_extension.py
+          python package_firefox.py
+          cp dist/AutoBookmark-v1.0.0.zip dist/AutoBookmark.zip
+          cp dist/AutoBookmark-firefox-v1.0.0.zip dist/AutoBookmark-firefox.zip
+
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/AutoBookmark.zip
+          files: |
+            dist/AutoBookmark.zip
+            dist/AutoBookmark-firefox.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

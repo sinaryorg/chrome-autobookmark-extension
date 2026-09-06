@@ -25,7 +25,7 @@ async function broadcastToAllTabs(message) {
   try {
     const tabs = await chrome.tabs.query({});
     for (const tab of tabs) {
-      if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('edge://') && !tab.url.startsWith('chrome-extension://')) {
+      if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('edge://') && !tab.url.startsWith('about:') && !tab.url.startsWith('moz-extension://') && !tab.url.startsWith('chrome-extension://')) {
         chrome.tabs.sendMessage(tab.id, message).catch(() => {});
       }
     }
@@ -54,7 +54,7 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'toggle-bar') {
     try {
       const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (activeTab && activeTab.id && activeTab.url && !activeTab.url.startsWith('chrome://')) {
+      if (activeTab && activeTab.id && activeTab.url && !activeTab.url.startsWith('chrome://') && !activeTab.url.startsWith('edge://') && !activeTab.url.startsWith('about:')) {
         chrome.tabs.sendMessage(activeTab.id, { type: 'TOGGLE_PIN' }).catch(() => {});
       }
     } catch (e) {}
@@ -70,12 +70,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       if (tree && tree.length > 0 && tree[0].children) {
         const rootChildren = tree[0].children;
-        const barFolder = rootChildren.find(c => c.id === '1' || /bar/i.test(c.title)) || rootChildren[0];
+        // Supports Chrome/Edge ('1', /bar/i) and Firefox ('toolbar_____', /toolbar/i)
+        const barFolder = rootChildren.find(c => c.id === '1' || c.id === 'toolbar_____' || /bar|toolbar/i.test(c.title)) || rootChildren[0];
         if (barFolder && barFolder.children) {
           barItems = barFolder.children;
         }
 
-        const otherFolder = rootChildren.find(c => c.id === '2' || /other/i.test(c.title)) || rootChildren[1];
+        // Supports Chrome/Edge ('2', /other/i) and Firefox ('unfiled_____', /unfiled|other/i)
+        const otherFolder = rootChildren.find(c => c.id === '2' || c.id === 'unfiled_____' || /other|unfiled/i.test(c.title)) || rootChildren[1];
         if (otherFolder && otherFolder.children && otherFolder.children.length > 0) {
           otherItems = [otherFolder];
         }
