@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoBookmark — by Sinary</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-group">
+        <img src="icons/icon48.png" alt="AutoBookmark Logo" class="logo-icon">
+        <div>
+          <h1 class="title">AutoBookmark</h1>
+          <a href="https://sinary.org" target="_blank" class="sinary-badge" title="Developed by sinary.org developers">
+            <img src="icons/sinary-icon.png" class="sinary-badge-icon" alt="Sinary">
+            <span>by sinary.org</span>
+          </a>
+        </div>
+      </div>
+      <label class="switch-toggle" title="Enable / Disable AutoBookmark">
+        <input type="checkbox" id="enableToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <!-- Pin / Shortcut Card -->
+    <div class="shortcut-banner">
+      <div class="shortcut-info">
+        <span class="shortcut-label">Quick Toggle / Pin</span>
+        <kbd class="key-badge">Alt + B</kbd>
+      </div>
+      <button id="pinToggleBtn" class="btn-secondary">Pin Bar</button>
+    </div>
+
+    <!-- Quick Search -->
+    <div class="search-section">
+      <div class="search-box">
+        <svg class="icon-search" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="popupSearchInput" placeholder="Search all bookmarks...">
+      </div>
+      <div id="popupSearchResults" class="search-results-list"></div>
+    </div>
+
+    <!-- Settings Sections -->
+    <div class="settings-group">
+      <h2 class="section-title">Hover & Timing</h2>
+
+      <!-- Trigger Sensitivity -->
+      <div class="setting-item">
+        <div class="setting-label-row">
+          <span>Trigger Proximity</span>
+          <span class="val-badge" id="valTrigger">8px</span>
+        </div>
+        <input type="range" id="triggerHeight" min="2" max="25" value="8" class="range-slider">
+        <span class="setting-hint">Hover within this distance of the edge to reveal</span>
+      </div>
+
+      <!-- Hide Delay -->
+      <div class="setting-item">
+        <div class="setting-label-row">
+          <span>Auto-Hide Delay</span>
+          <span class="val-badge" id="valDelay">450ms</span>
+        </div>
+        <input type="range" id="hideDelay" min="100" max="1500" step="50" value="450" class="range-slider">
+        <span class="setting-hint">Delay before hiding after your mouse leaves</span>
+      </div>
+    </div>
+
+    <!-- Theme & Position -->
+    <div class="settings-group">
+      <h2 class="section-title">Appearance & Position</h2>
+
+      <div class="theme-grid">
+        <label class="theme-card">
+          <input type="radio" name="theme" value="dark-glass" checked>
+          <div class="theme-preview dark-glass">
+            <div class="bar-sample"></div>
+          </div>
+          <span class="theme-name">Dark Glass</span>
+        </label>
+
+        <label class="theme-card">
+          <input type="radio" name="theme" value="modern-light">
+          <div class="theme-preview modern-light">
+            <div class="bar-sample"></div>
+          </div>
+          <span class="theme-name">Light</span>
+        </label>
+
+        <label class="theme-card">
+          <input type="radio" name="theme" value="amoled">
+          <div class="theme-preview amoled">
+            <div class="bar-sample"></div>
+          </div>
+          <span class="theme-name">AMOLED</span>
+        </label>
+
+        <label class="theme-card">
+          <input type="radio" name="theme" value="chrome">
+          <div class="theme-preview chrome">
+            <div class="bar-sample"></div>
+          </div>
+          <span class="theme-name">Classic</span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-text">Screen Edge Position</span>
+        <div class="segmented-control">
+          <button type="button" class="segment-btn active" data-pos="top">Top</button>
+          <button type="button" class="segment-btn" data-pos="bottom">Bottom</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="settings-group">
+      <h2 class="section-title">Behavior</h2>
+
+      <div class="setting-row">
+        <span class="setting-text">Open in New Tab</span>
+        <label class="switch-toggle small">
+          <input type="checkbox" id="openInNewTab">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-text">Show Website Favicons</span>
+        <label class="switch-toggle small">
+          <input type="checkbox" id="showFavicons" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Sinary Developer Attribution Card -->
+    <div class="sinary-dev-card">
+      <img src="icons/sinary-icon.png" class="sinary-card-logo" alt="Sinary">
+      <div class="sinary-card-content">
+        <span class="sinary-card-title">Crafted by <strong>sinary.org</strong> developers</span>
+        <span class="sinary-card-desc">All-in-one digital platform for apps & tools</span>
+      </div>
+      <a href="https://sinary.org" target="_blank" class="sinary-visit-btn" title="Explore sinary.org">Visit ↗</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span id="statusText">Active on all web pages</span>
+      </div>
+      <button id="resetDefaultsBtn" class="btn-text">Reset</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

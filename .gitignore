@@ -1,0 +1,14 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Archives & Builds
+*.zip
+*.crx
+dist/
+build/
+
+# Temporary / Scratch files
+*.tmp
+*.log
+scratch/

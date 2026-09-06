@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "AutoBookmark — by Sinary",
+  "version": "1.0.0",
+  "description": "Smart auto-hiding floating bookmark bar developed by sinary.org. Reveals your bookmarks on hover with beveled glass aesthetics.",
+  "author": "sinary.org",
+  "homepage_url": "https://sinary.org",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "favicon"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AutoBookmark by sinary.org",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "toggle-bar": {
+      "suggested_key": {
+        "default": "Alt+B",
+        "mac": "Alt+B"
+      },
+      "description": "Toggle or pin the floating bookmark bar"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*", "content.css", "sinary-logo.svg"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

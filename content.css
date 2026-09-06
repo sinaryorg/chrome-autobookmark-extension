@@ -1,0 +1,703 @@
+/* AutoBookmark - Shadow DOM Stylesheet */
+
+:host {
+  all: initial;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color-scheme: dark light;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Invisible Trigger Zone at the very top edge */
+.ab-trigger-zone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 8px;
+  z-index: 2147483647;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.ab-trigger-zone.ab-bottom {
+  top: auto;
+  bottom: 0;
+}
+
+/* Floating Bookmark Bar Shell */
+.ab-bar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 38px;
+  z-index: 2147483646;
+  pointer-events: none;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  user-select: none;
+}
+
+/* Bottom bar position support */
+.ab-bar-container.ab-position-bottom {
+  top: auto;
+  bottom: 0;
+  transform: translateY(100%);
+}
+
+/* Visible / Pinned State */
+.ab-bar-container.ab-visible,
+.ab-bar-container.ab-pinned {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* The actual bar element */
+.ab-bar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+/* Themes */
+/* 1. Dark Glass (Default) */
+.ab-theme-dark-glass {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  color: #e2e8f0;
+}
+.ab-position-bottom .ab-theme-dark-glass {
+  border-bottom: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* 2. Modern Light */
+.ab-theme-modern-light {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  color: #1e293b;
+}
+.ab-position-bottom .ab-theme-modern-light {
+  border-bottom: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.12);
+}
+
+/* 3. AMOLED Black */
+.ab-theme-amoled {
+  background: #09090b;
+  border-bottom: 1px solid #27272a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  color: #fafafa;
+}
+.ab-position-bottom .ab-theme-amoled {
+  border-bottom: none;
+  border-top: 1px solid #27272a;
+}
+
+/* 4. Chrome Classic */
+.ab-theme-chrome {
+  background: #292a2d;
+  border-bottom: 1px solid #1c1d1f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  color: #e8eaed;
+}
+.ab-position-bottom .ab-theme-chrome {
+  border-bottom: none;
+  border-top: 1px solid #1c1d1f;
+}
+
+/* Sinary Brand Button */
+.ab-sinary-brand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  margin-right: 2px;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.ab-sinary-brand-btn:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+.ab-sinary-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+/* Navigation / Action Buttons */
+.ab-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.ab-action-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.05);
+}
+.ab-theme-modern-light .ab-action-btn:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+.ab-action-btn.ab-active {
+  opacity: 1;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+}
+
+/* Divider */
+.ab-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+.ab-theme-modern-light .ab-divider {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Bookmarks Horizontal Scroll Track */
+.ab-items-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.ab-items-track {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 100%;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  scroll-behavior: smooth;
+  padding: 0 2px;
+}
+.ab-items-track::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Overflow scroll arrows */
+.ab-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 26px;
+  background: rgba(15, 23, 42, 0.9);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.85;
+}
+.ab-theme-modern-light .ab-scroll-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+.ab-scroll-btn:hover {
+  opacity: 1;
+  background: #38bdf8;
+  color: #fff;
+}
+.ab-scroll-btn.ab-scroll-left {
+  left: 0;
+}
+.ab-scroll-btn.ab-scroll-right {
+  right: 0;
+}
+.ab-scroll-btn.ab-show {
+  display: flex;
+}
+
+/* Bookmark & Folder Item Chips */
+.ab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  position: relative;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+.ab-item:hover,
+.ab-item.ab-open {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.ab-theme-modern-light .ab-item:hover,
+.ab-theme-modern-light .ab-item.ab-open {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Favicons & Icons */
+.ab-favicon {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.ab-icon-svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.ab-folder-icon {
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ab-folder-arrow {
+  font-size: 9px;
+  opacity: 0.6;
+  margin-left: 2px;
+  transition: transform 0.15s ease;
+}
+.ab-item.ab-open .ab-folder-arrow {
+  transform: rotate(180deg);
+}
+
+.ab-title {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dropdown Menus for Folders */
+.ab-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  max-width: 320px;
+  max-height: 480px;
+  overflow-y: auto;
+  margin-top: 4px;
+  padding: 5px;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 2147483647;
+  animation: abDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ab-position-bottom .ab-dropdown {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.ab-item.ab-open > .ab-dropdown,
+.ab-dropdown-parent:hover > .ab-dropdown {
+  display: flex;
+}
+
+/* Dropdown Submenu Positioning */
+.ab-dropdown-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  white-space: nowrap;
+}
+.ab-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.ab-theme-modern-light .ab-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.ab-dropdown-item .ab-title {
+  max-width: 220px;
+  flex: 1;
+}
+
+/* Submenu flyout */
+.ab-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 4px;
+  min-width: 200px;
+  display: none;
+  flex-direction: column;
+  padding: 5px;
+  border-radius: 8px;
+  z-index: 2147483647;
+}
+.ab-dropdown-item:hover > .ab-submenu {
+  display: flex;
+}
+
+/* Theming Dropdowns & Search Results Modal */
+.ab-theme-dark-glass .ab-dropdown,
+.ab-theme-dark-glass .ab-submenu,
+.ab-theme-dark-glass .ab-search-results-modal {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.65), 0 6px 12px -2px rgba(0, 0, 0, 0.4);
+  color: #f1f5f9;
+}
+
+.ab-theme-modern-light .ab-dropdown,
+.ab-theme-modern-light .ab-submenu,
+.ab-theme-modern-light .ab-search-results-modal {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.18), 0 6px 12px -2px rgba(0, 0, 0, 0.08);
+  color: #1e293b;
+}
+
+.ab-theme-amoled .ab-dropdown,
+.ab-theme-amoled .ab-submenu,
+.ab-theme-amoled .ab-search-results-modal {
+  background: #09090b;
+  border: 1px solid #27272a;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
+  color: #fafafa;
+}
+
+.ab-theme-chrome .ab-dropdown,
+.ab-theme-chrome .ab-submenu,
+.ab-theme-chrome .ab-search-results-modal {
+  background: #292a2d;
+  border: 1px solid #1c1d1f;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+  color: #dfe1e5;
+}
+
+/* Quick Search Input inside Bar */
+.ab-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+  height: 100%;
+}
+
+.ab-search-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 28px;
+}
+.ab-search-container.ab-search-open {
+  width: 190px;
+}
+.ab-search-input {
+  width: 100%;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0 8px 0 26px;
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+.ab-theme-modern-light .ab-search-input {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+.ab-search-container.ab-search-open .ab-search-input {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ab-search-icon-btn {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+  z-index: 2;
+}
+.ab-search-icon-btn:hover {
+  opacity: 1;
+  color: #38bdf8;
+  background: rgba(255, 255, 255, 0.08);
+}
+.ab-theme-modern-light .ab-search-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.ab-search-container.ab-search-open .ab-search-icon-btn,
+.ab-search-container.ab-search-open .ab-search-icon-btn:hover {
+  background: transparent !important;
+  color: inherit !important;
+  opacity: 0.7 !important;
+}
+
+/* Connected Search Results Dropdown - Seamlessly attached with Bevel */
+.ab-search-results-modal {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: -1px;
+  width: max-content;
+  min-width: 100%;
+  max-width: 380px;
+  height: auto;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 5px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 2147483647;
+  animation: abSearchPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset -1px 0 0 rgba(255, 255, 255, 0.06),
+    0 16px 36px -4px rgba(0, 0, 0, 0.65), 
+    0 6px 12px -2px rgba(0, 0, 0, 0.4);
+}
+
+/* Concave Bevel Fillet where search results container connects to the navbar */
+.ab-search-results-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -12px;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.ab-theme-dark-glass .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 100%, transparent 12px, rgba(15, 23, 42, 0.88) 12.5px);
+  filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.12));
+}
+
+.ab-theme-modern-light .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 100%, transparent 12px, rgba(255, 255, 255, 0.92) 12.5px);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.1));
+}
+
+.ab-theme-amoled .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 100%, transparent 12px, #09090b 12.5px);
+  filter: drop-shadow(0 -1px 0 #27272a);
+}
+
+.ab-theme-chrome .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 100%, transparent 12px, #292a2d 12.5px);
+  filter: drop-shadow(0 -1px 0 #1c1d1f);
+}
+
+/* Bottom Bar Position Adaptations */
+.ab-position-bottom .ab-search-results-modal {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: -1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  box-shadow: 
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    0 -16px 36px -4px rgba(0, 0, 0, 0.65);
+}
+
+.ab-position-bottom .ab-search-results-modal::before {
+  top: auto;
+  bottom: 0;
+}
+
+.ab-position-bottom.ab-theme-dark-glass .ab-search-results-modal::before,
+.ab-theme-dark-glass .ab-position-bottom .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 0, transparent 12px, rgba(15, 23, 42, 0.88) 12.5px);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.12));
+}
+
+.ab-position-bottom.ab-theme-modern-light .ab-search-results-modal::before,
+.ab-theme-modern-light .ab-position-bottom .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 0, transparent 12px, rgba(255, 255, 255, 0.92) 12.5px);
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.1));
+}
+
+.ab-position-bottom.ab-theme-amoled .ab-search-results-modal::before,
+.ab-theme-amoled .ab-position-bottom .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 0, transparent 12px, #09090b 12.5px);
+  filter: drop-shadow(0 1px 0 #27272a);
+}
+
+.ab-position-bottom.ab-theme-chrome .ab-search-results-modal::before,
+.ab-theme-chrome .ab-position-bottom .ab-search-results-modal::before {
+  background: radial-gradient(circle at 0 0, transparent 12px, #292a2d 12.5px);
+  filter: drop-shadow(0 1px 0 #1c1d1f);
+}
+
+.ab-search-results-modal.ab-show {
+  display: flex;
+}
+
+/* Search results items & title fit */
+.ab-search-results-modal .ab-dropdown-item {
+  width: auto;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 6px;
+  gap: 8px;
+  transition: all 0.12s ease;
+}
+.ab-search-results-modal .ab-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(2px);
+}
+.ab-theme-modern-light .ab-search-results-modal .ab-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.ab-search-results-modal .ab-title {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ab-search-results-modal::-webkit-scrollbar {
+  width: 4px;
+}
+.ab-search-results-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ab-search-results-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.ab-theme-modern-light .ab-search-results-modal::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Animation */
+@keyframes abSearchPop {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes abDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Empty state message */
+.ab-empty-msg {
+  padding: 6px 12px;
+  font-size: 12px;
+  opacity: 0.6;
+  font-style: italic;
+}
