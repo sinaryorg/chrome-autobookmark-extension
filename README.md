@@ -117,6 +117,18 @@ AutoBookmark is developed and maintained by the **[sinary.org](https://sinary.or
 - **Website**: [https://sinary.org](https://sinary.org)
 - **GitHub**: [https://github.com/sinaryorg](https://github.com/sinaryorg)
 - **Privacy Policy**: [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
+- **Roadmap & Next Update**: [ROADMAP.md](ROADMAP.md)
+
+---
+
+## 🗺️ What's Coming in v1.1.0 (Roadmap)
+
+We are actively planning the next major update! See **[ROADMAP.md](ROADMAP.md)** for technical specifications:
+1. ✏️ **Edit Added Bookmarks**: Directly update title and URL.
+2. 🗑️ **Remove Added Bookmarks**: 1-click or right-click deletion.
+3. 📂 **Open & Explore Folders**: Deep folder browsing and "Open All in Tabs".
+4. 🔀 **Drag-and-Drop Organization**: Reorder bookmarks and drop into folders.
+5. 📁 **Create & Delete Folders**: Complete folder lifecycle management.
 
 ---
 
