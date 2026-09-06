@@ -12,11 +12,14 @@ if os.path.exists(zip_path):
 with open("manifest.json", "r", encoding="utf-8") as f:
     manifest = json.load(f)
 
-# Firefox requires gecko ID in browser_specific_settings
+# Firefox requires gecko ID and data_collection_permissions in browser_specific_settings
 manifest["browser_specific_settings"] = {
     "gecko": {
         "id": "autobookmark@sinary.org",
-        "strict_min_version": "109.0"
+        "strict_min_version": "109.0",
+        "data_collection_permissions": {
+            "required": ["none"]
+        }
     }
 }
 
