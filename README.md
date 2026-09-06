@@ -2,7 +2,17 @@
 
 > A smart, auto-hiding floating bookmark bar for **Chrome, Edge, Firefox, Brave, and Opera** crafted by the **[sinary.org](https://sinary.org/)** developer team.
 
+<div align="center">
+
+[![Microsoft Edge Add-ons](https://img.shields.io/badge/Microsoft_Edge-Get_Extension-0078D7?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://microsoftedge.microsoft.com/addons/detail/khedapqqmjilinfojcjebhmecaaikojg)
+[![GitHub Release](https://img.shields.io/github/v/release/sinaryorg/chrome-autobookmark-extension?style=for-the-badge&color=10B981)](https://github.com/sinaryorg/chrome-autobookmark-extension/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+
+<br/>
+
 ![AutoBookmark Banner](icons/icon128.png)
+
+</div>
 
 ---
 
@@ -55,11 +65,11 @@ You can install AutoBookmark using either the official stores or directly from G
 
 | Store | Compatible Browsers | Status |
 | :--- | :--- | :--- |
-| **Microsoft Edge Add-ons** | Edge, Chrome, Brave | In Review ([View Store](https://microsoftedge.microsoft.com/addons)) |
+| **Microsoft Edge Add-ons** | Edge, Chrome, Brave | 🟢 **[Install from Edge Store](https://microsoftedge.microsoft.com/addons/detail/khedapqqmjilinfojcjebhmecaaikojg)** (Live) |
 | **Opera Add-ons** | Opera & Opera GX | In Review ([View Store](https://addons.opera.com)) |
 | **Mozilla Firefox Add-ons (AMO)** | Firefox | In Review ([View Store](https://addons.mozilla.org)) |
 
-*Note: Microsoft Edge Add-ons can also be installed directly into Google Chrome and Brave by clicking "Allow extensions from other stores".*
+*Note: Microsoft Edge Add-ons can also be installed directly into Google Chrome and Brave with 1 click by clicking "Allow extensions from other stores".*
 
 ---
 
