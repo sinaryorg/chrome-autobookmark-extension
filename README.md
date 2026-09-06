@@ -28,7 +28,7 @@
 
 1. Clone or download this repository:
    ```bash
-   git clone https://github.com/your-username/AutoBookmark.git
+   git clone https://github.com/sinaryorg/chrome-autobookmark-extension.git
    ```
 2. Open **Google Chrome** and navigate to:
    ```text
@@ -73,7 +73,7 @@ Click the **AutoBookmark** icon in your Chrome extensions toolbar to customize:
 AutoBookmark is developed and maintained by the **[sinary.org](https://sinary.org/)** developer team — building privacy-focused apps, digital tools, and browser extensions.
 
 - Website: [https://sinary.org](https://sinary.org)
-- GitHub: [https://github.com/sinary](https://github.com/sinary)
+- GitHub: [https://github.com/sinaryorg](https://github.com/sinaryorg)
 
 ---
 
