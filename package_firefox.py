@@ -16,12 +16,16 @@ with open("manifest.json", "r", encoding="utf-8") as f:
 manifest["browser_specific_settings"] = {
     "gecko": {
         "id": "autobookmark@sinary.org",
-        "strict_min_version": "109.0",
+        "strict_min_version": "140.0",
         "data_collection_permissions": {
             "required": ["none"]
         }
     }
 }
+
+# Remove Chrome-only "favicon" permission from Firefox package
+if "permissions" in manifest and "favicon" in manifest["permissions"]:
+    manifest["permissions"].remove("favicon")
 
 # Firefox MV3 prefers background.scripts (event page) or service_worker
 manifest["background"] = {
