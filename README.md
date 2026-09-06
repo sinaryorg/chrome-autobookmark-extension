@@ -1,8 +1,21 @@
 # AutoBookmark — by Sinary
 
-> A smart, auto-hiding floating bookmark bar for Google Chrome (Manifest V3) crafted by the **[sinary.org](https://sinary.org/)** developer team.
+> A smart, auto-hiding floating bookmark bar for **Chromium-based browsers** (Manifest V3) crafted by the **[sinary.org](https://sinary.org/)** developer team.
 
 ![AutoBookmark Banner](icons/icon128.png)
+
+---
+
+## 🌐 Browser Compatibility
+
+AutoBookmark is built using standard Chromium Manifest V3 and is **100% compatible with all major Chromium-based browsers**:
+
+- ✅ **Google Chrome**
+- ✅ **Microsoft Edge**
+- ✅ **Brave Browser**
+- ✅ **Opera & Opera GX**
+- ✅ **Vivaldi**
+- ✅ **Arc Browser**
 
 ---
 
@@ -19,25 +32,40 @@
 
 ---
 
-## 🚀 Installation
+## 🚀 How to Get AutoBookmark
 
-### Option 1: Chrome Web Store
-*(Link will be available once published on the Chrome Web Store)*
+> [!NOTE]
+> **Why isn't AutoBookmark on the Chrome Web Store?**  
+> Google charges an upfront developer registration fee to publish on the Chrome Web Store. To keep AutoBookmark 100% free and open-source without passing costs onto our users, we distribute AutoBookmark directly via **GitHub Releases** and the official **Microsoft Edge Add-ons Store** (which works in Chrome too!).
 
-### Option 2: Manual Installation (Developer Mode)
+You can install AutoBookmark using either method below:
 
-1. Clone or download this repository:
-   ```bash
-   git clone https://github.com/sinaryorg/chrome-autobookmark-extension.git
-   ```
-2. Open **Google Chrome** and navigate to:
-   ```text
-   chrome://extensions
-   ```
-3. Enable **Developer mode** using the toggle in the upper-right corner.
-4. Click the **Load unpacked** button in the upper-left corner.
-5. Select the `AutoBookmark` folder (containing `manifest.json`).
-6. Hover at the top edge of any page to enjoy your auto-hiding bookmark bar!
+### Method 1: Microsoft Edge Add-ons Store (Recommended — 1-Click Install & Auto-Updates)
+
+The easiest way to install and receive automatic updates. **Works on Edge, Chrome, Brave, and Opera**:
+
+1. Visit the **[AutoBookmark Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons)** store listing.
+2. Click **Get** (or **Add to Chrome** / **Add to Brave**).
+   - *If installing in Google Chrome:* Chrome will prompt `"Allow extensions from other stores"`. Click **Allow**, then click **Add to Chrome**.
+3. Done! The extension will automatically stay updated in the background.
+
+---
+
+### Method 2: Direct GitHub Release (No Store Required)
+
+For complete independence from any store:
+
+1. Download **`AutoBookmark.zip`** from the latest release:  
+   👉 **[Download Latest GitHub Release](https://github.com/sinaryorg/chrome-autobookmark-extension/releases/latest)**
+2. Unzip `AutoBookmark.zip` into a folder on your computer.
+3. Open your browser's extension management page:
+   - **Chrome**: `chrome://extensions`
+   - **Edge**: `edge://extensions`
+   - **Brave**: `brave://extensions`
+   - **Opera**: `opera://extensions`
+4. Toggle ON **Developer mode** (top-right corner switch).
+5. Click **"Load unpacked"** (top-left) and select the unzipped folder.
+6. Done! Hover near the top edge of any website to use your new bookmark bar.
 
 ---
 
@@ -51,10 +79,10 @@
 
 ## ⚙️ Extension Settings
 
-Click the **AutoBookmark** icon in your Chrome extensions toolbar to customize:
-- **Trigger Proximity**: Adjust sensitivity (2px to 25px).
+Click the **AutoBookmark** icon in your browser toolbar to customize:
+- **Trigger Proximity**: Adjust sensitivity (2px to 25px from the top edge).
 - **Auto-Hide Delay**: Configure hide duration (100ms to 1500ms).
-- **Appearance Themes**: Switch between Dark Glass, Modern Light, AMOLED, and Classic.
+- **Appearance Themes**: Switch between Dark Glass, Modern Light, AMOLED Black, and Classic Chrome.
 - **Position**: Place on the Top or Bottom screen edge.
 - **Behavior**: Choose whether bookmarks open in the current tab or a new tab.
 
@@ -64,7 +92,7 @@ Click the **AutoBookmark** icon in your Chrome extensions toolbar to customize:
 
 - **Manifest V3**: Pure modern extension standards using background service workers and declarative storage.
 - **Shadow DOM**: Complete style and layout encapsulation from the host webpage.
-- **Native Chrome APIs**: `chrome.bookmarks`, `chrome.storage.sync`, and `chrome.commands`.
+- **Native Browser APIs**: `chrome.bookmarks`, `chrome.storage.sync`, and `chrome.commands`.
 
 ---
 
@@ -72,8 +100,9 @@ Click the **AutoBookmark** icon in your Chrome extensions toolbar to customize:
 
 AutoBookmark is developed and maintained by the **[sinary.org](https://sinary.org/)** developer team — building privacy-focused apps, digital tools, and browser extensions.
 
-- Website: [https://sinary.org](https://sinary.org)
-- GitHub: [https://github.com/sinaryorg](https://github.com/sinaryorg)
+- **Website**: [https://sinary.org](https://sinary.org)
+- **GitHub**: [https://github.com/sinaryorg](https://github.com/sinaryorg)
+- **Privacy Policy**: [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
 
 ---
 
