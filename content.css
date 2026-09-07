@@ -22,7 +22,7 @@
   left: 0;
   width: 100vw;
   height: 8px;
-  z-index: 2147483647;
+  z-index: 2147483600;
   pointer-events: auto;
   background: transparent;
 }
@@ -39,7 +39,7 @@
   left: 0;
   width: 100vw;
   height: 38px;
-  z-index: 2147483646;
+  z-index: 2147483610;
   pointer-events: none;
   transform: translateY(-100%);
   opacity: 0;
@@ -387,7 +387,7 @@
   border-top: none !important;
   display: none;
   flex-direction: column;
-  z-index: 2147483647;
+  z-index: 2147483620;
   user-select: none;
   pointer-events: auto;
   animation: abDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
@@ -473,7 +473,7 @@
   display: none;
   flex-direction: column;
   gap: 2px;
-  z-index: 2147483647;
+  z-index: 2147483620;
   animation: abDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ab-position-bottom .ab-dropdown {
@@ -525,7 +525,7 @@
   display: none;
   flex-direction: column;
   border-radius: 8px;
-  z-index: 2147483647;
+  z-index: 2147483625;
   user-select: none;
   pointer-events: auto;
   animation: abDropdownFade 0.14s cubic-bezier(0.16, 1, 0.3, 1);
@@ -833,7 +833,7 @@
   border-radius: 0 0 10px 10px;
   display: none;
   flex-direction: column;
-  z-index: 2147483647;
+  z-index: 2147483620;
   animation: abDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: visible;
   user-select: none;
@@ -986,7 +986,7 @@
    ========================================================================== */
 .ab-context-menu {
   position: fixed;
-  z-index: 2147483647;
+  z-index: 2147483646 !important;
   min-width: 175px;
   max-width: 240px;
   border-radius: 8px;
@@ -1058,7 +1058,7 @@
 .ab-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 2147483647;
+  z-index: 2147483647 !important;
   display: none;
   align-items: center;
   justify-content: center;

@@ -185,6 +185,12 @@
     if (e.relatedTarget && activeFolderItem && activeFolderItem.contains(e.relatedTarget)) {
       return;
     }
+    if (isContextMenuOpen || isModalOpen) {
+      return;
+    }
+    if (e.relatedTarget && (e.relatedTarget === contextMenu || contextMenu.contains(e.relatedTarget))) {
+      return;
+    }
     isMouseInsideDropdown = false;
     if (isPinned) {
       closeAllDropdowns();
@@ -453,7 +459,9 @@
     contextMenu.classList.remove('ab-show');
     contextMenu.innerHTML = '';
     activeContextTarget = null;
-    scheduleHide();
+    if (!isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isModalOpen) {
+      scheduleHide();
+    }
   }
 
   function closeModal() {
@@ -466,9 +474,11 @@
 
   function openEditModal(itemData) {
     if (!itemData || !itemData.id) return;
+    closeAllDropdowns();
     isModalOpen = true;
     clearTimeout(hideTimer);
     showBar();
+    shadow.appendChild(modalBackdrop);
 
     const isFolder = !!itemData.isFolder;
     const titleText = isFolder ? 'Rename Folder' : 'Edit Bookmark';
@@ -544,9 +554,11 @@
     if (!itemData || !itemData.id) return;
     if (isRootFolder(itemData.id)) return;
 
+    closeAllDropdowns();
     isModalOpen = true;
     clearTimeout(hideTimer);
     showBar();
+    shadow.appendChild(modalBackdrop);
 
     const isFolder = !!itemData.isFolder;
     const titleText = isFolder ? 'Delete Folder' : 'Delete Bookmark';
@@ -613,6 +625,20 @@
     activeContextTarget = itemData;
     clearTimeout(hideTimer);
     showBar();
+
+    // Close any child submenus or deeper flyouts that might obstruct or collide
+    if (itemData.isFolder) {
+      if (typeof itemData.level === 'number' && itemData.level >= 1) {
+        closeSubmenusFromLevel(itemData.level);
+      } else {
+        closeAllSubmenus();
+      }
+    } else if (typeof itemData.level === 'number') {
+      closeSubmenusFromLevel(itemData.level + 1);
+    }
+
+    // Ensure context menu is the last DOM child in shadow root to guarantee highest stacking
+    shadow.appendChild(contextMenu);
 
     const isFolder = !!itemData.isFolder;
     const canDelete = !isRootFolder(itemData.id);
@@ -1032,7 +1058,8 @@
         title: item.title,
         url: item.url,
         isFolder: false,
-        parentId: item.parentId || barFolderId
+        parentId: item.parentId || barFolderId,
+        level: 0
       });
     });
 
@@ -1059,6 +1086,7 @@
     const submenu = document.createElement('div');
     submenu.className = `ab-submenu ab-theme-${settings.theme || 'dark-glass'} ab-show`;
     submenu.dataset.level = String(level);
+    submenu.style.zIndex = `${2147483625 + level * 2}`;
 
     const scrollContainer = document.createElement('div');
     scrollContainer.className = 'ab-submenu-scroll';
@@ -1147,6 +1175,12 @@
     });
 
     submenu.addEventListener('mouseleave', (e) => {
+      if (isContextMenuOpen || isModalOpen) {
+        return;
+      }
+      if (e.relatedTarget && (e.relatedTarget === contextMenu || contextMenu.contains(e.relatedTarget))) {
+        return;
+      }
       const childRecord = openSubmenus.find(s => s.level === level + 1);
       if (childRecord && childRecord.submenuElem.contains(e.relatedTarget)) {
         return;
@@ -1327,6 +1361,7 @@
       });
 
       a.addEventListener('mouseenter', () => {
+        if (isContextMenuOpen || isModalOpen) return;
         closeSubmenusFromLevel(level);
       });
 
@@ -1336,7 +1371,8 @@
           title: child.title,
           url: child.url,
           isFolder: false,
-          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId)
+          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId),
+          level: level
         });
       });
 
@@ -1354,7 +1390,8 @@
           id: child.id,
           title: child.title,
           isFolder: true,
-          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId)
+          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId),
+          level: level
         });
       });
       folderDiv.tabIndex = 0;
@@ -1383,7 +1420,7 @@
       let subOpenTimer = null;
 
       folderDiv.addEventListener('mouseenter', () => {
-        if (isDraggingBookmark) return;
+        if (isDraggingBookmark || isContextMenuOpen || isModalOpen) return;
         const record = openSubmenus.find(s => s.level === level && s.folderElem === folderDiv);
         if (record && record.closeTimer) {
           clearTimeout(record.closeTimer);
@@ -1395,7 +1432,7 @@
           openSubmenu(folderDiv, child, level);
         } else if (!activeAtThisLevel) {
           subOpenTimer = setTimeout(() => {
-            if (folderDiv.matches(':hover')) {
+            if (folderDiv.matches(':hover') && !isContextMenuOpen && !isModalOpen) {
               openSubmenu(folderDiv, child, level);
             }
           }, 180);
@@ -1404,6 +1441,12 @@
 
       folderDiv.addEventListener('mouseleave', (e) => {
         clearTimeout(subOpenTimer);
+        if (isContextMenuOpen || isModalOpen) {
+          return;
+        }
+        if (e.relatedTarget && (e.relatedTarget === contextMenu || contextMenu.contains(e.relatedTarget))) {
+          return;
+        }
         const record = openSubmenus.find(s => s.level === level && s.folderElem === folderDiv);
         if (record) {
           if (record.submenuElem.contains(e.relatedTarget)) {
@@ -1572,11 +1615,13 @@
     });
 
     div.addEventListener('contextmenu', (e) => {
+      closeAllDropdowns();
       handleContextMenu(e, {
         id: folder.id,
         title: folder.title,
         isFolder: true,
-        parentId: folder.parentId || barFolderId
+        parentId: folder.parentId || barFolderId,
+        level: 0
       });
     });
 
