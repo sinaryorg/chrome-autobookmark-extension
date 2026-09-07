@@ -12,6 +12,7 @@
     theme: 'dark-glass',
     openInNewTab: false,
     showFavicons: true,
+    showBookmarkUrl: false,
     hideTooltips: true,
     barPosition: 'top',
     pinned: false
@@ -259,6 +260,14 @@
     return `${title.trim()}\n${cleanUrl}`;
   }
 
+  // Check if bookmark URL preview should be displayed on hover
+  function shouldShowBookmarkUrl() {
+    if (settings.showBookmarkUrl !== undefined) {
+      return !!settings.showBookmarkUrl;
+    }
+    return settings.hideTooltips === false;
+  }
+
   // Show / Hide Functions
   function showBar() {
     if (!settings.enabled) return;
@@ -366,7 +375,7 @@
     const a = document.createElement('a');
     a.className = 'ab-item ab-bookmark';
     a.href = item.url || '#';
-    if (!settings.hideTooltips) {
+    if (shouldShowBookmarkUrl()) {
       a.title = formatBookmarkTooltip(item.title, item.url);
     }
 
@@ -408,7 +417,7 @@
       const a = document.createElement('a');
       a.className = 'ab-dropdown-item';
       a.href = child.url;
-      if (!settings.hideTooltips) {
+      if (shouldShowBookmarkUrl()) {
         a.title = formatBookmarkTooltip(child.title, child.url);
       }
 
@@ -714,7 +723,7 @@
           const a = document.createElement('a');
           a.className = 'ab-dropdown-item';
           a.href = item.url;
-          if (!settings.hideTooltips) {
+          if (shouldShowBookmarkUrl()) {
             a.title = formatBookmarkTooltip(item.title, item.url);
           }
 

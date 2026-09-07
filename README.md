@@ -141,7 +141,7 @@ Click the **AutoBookmark** icon in your browser toolbar to customize:
 - **Auto-Hide Delay**: Configure hide duration (100ms to 1500ms).
 - **Appearance Themes**: Switch between Dark Glass, Modern Light, AMOLED Black, and Classic Chrome.
 - **Position**: Place on the Top or Bottom screen edge.
-- **Behavior**: Choose whether bookmarks open in the current tab or a new tab.
+- **Behavior**: Choose whether bookmarks open in the current tab or a new tab, toggle website favicons, and toggle bookmark URL previews on hover.
 
 ---
 
