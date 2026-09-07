@@ -674,6 +674,131 @@ input:checked + .slider::before {
   color: #ffffff;
 }
 
+/* Header version badge */
+.version-badge {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: monospace;
+  color: var(--accent);
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* GitHub Version & Update Card */
+.version-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--badge-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  transition: all 0.25s ease;
+}
+
+.version-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.github-icon {
+  flex-shrink: 0;
+  fill: var(--text-secondary);
+  transition: fill 0.25s ease;
+}
+
+.version-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.version-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.version-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.version-pill {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: monospace;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  color: var(--accent);
+}
+
+.version-status {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+}
+
+.version-status.update-available {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.version-status.up-to-date {
+  color: #10b981;
+}
+
+.version-action-btn {
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  border-radius: 4px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.version-action-btn:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.version-action-btn.has-update {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  animation: updatePulse 2s infinite ease-in-out;
+}
+
+@keyframes updatePulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+  50% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); }
+}
+
 /* Footer */
 .footer {
   display: flex;

@@ -297,4 +297,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // GitHub Release Version & Update Checker
+  function initVersionChecker() {
+    const manifestVersion = chrome.runtime.getManifest()?.version || '1.0.0';
+    const currentV = `v${manifestVersion}`;
+
+    const headerBadge = document.getElementById('headerVersionBadge');
+    const currentPill = document.getElementById('currentVersionPill');
+    const statusText = document.getElementById('versionStatusText');
+    const actionBtn = document.getElementById('versionActionBtn');
+
+    if (headerBadge) headerBadge.textContent = currentV;
+    if (currentPill) currentPill.textContent = currentV;
+
+    function compareSemVer(vA, vB) {
+      const cleanA = (vA || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+      const cleanB = (vB || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+      const len = Math.max(cleanA.length, cleanB.length);
+      for (let i = 0; i < len; i++) {
+        const a = cleanA[i] || 0;
+        const b = cleanB[i] || 0;
+        if (a > b) return 1;
+        if (a < b) return -1;
+      }
+      return 0;
+    }
+
+    async function checkLatestRelease() {
+      try {
+        const res = await fetch('https://api.github.com/repos/sinaryorg/chrome-autobookmark-extension/releases/latest', {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+
+        if (!res.ok) {
+          if (statusText) statusText.textContent = 'Up to date with GitHub';
+          return;
+        }
+
+        const data = await res.json();
+        const latestTag = data.tag_name || currentV;
+        const releaseUrl = data.html_url || 'https://github.com/sinaryorg/chrome-autobookmark-extension/releases';
+
+        if (actionBtn) actionBtn.href = releaseUrl;
+
+        const cmp = compareSemVer(latestTag, currentV);
+        if (cmp > 0) {
+          // New release available
+          if (statusText) {
+            statusText.textContent = `🚀 Update ${latestTag} available!`;
+            statusText.className = 'version-status update-available';
+          }
+          if (actionBtn) {
+            actionBtn.textContent = 'Update ↗';
+            actionBtn.classList.add('has-update');
+            actionBtn.title = `Get ${latestTag} from GitHub Releases`;
+          }
+        } else {
+          // Up to date
+          if (statusText) {
+            statusText.textContent = '🟢 Latest release installed';
+            statusText.className = 'version-status up-to-date';
+          }
+          if (actionBtn) {
+            actionBtn.textContent = 'Releases ↗';
+            actionBtn.classList.remove('has-update');
+            actionBtn.title = 'View release notes on GitHub';
+          }
+        }
+      } catch (err) {
+        if (statusText) statusText.textContent = 'GitHub Release v1.0.0';
+      }
+    }
+
+    checkLatestRelease();
+  }
+
+  initVersionChecker();
+
 });
+
