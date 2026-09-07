@@ -211,6 +211,53 @@
     };
   }
 
+  // Clean URL helper: removes tracking bloat (utm_*, gclid, gad_source, etc.) and formats for sleek tooltips
+  function getCleanDisplayUrl(rawUrl, maxLen = 75) {
+    if (!rawUrl) return '';
+    try {
+      const u = new URL(rawUrl);
+      const trackingParams = [
+        'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+        'gclid', 'gbraid', 'wbraid', 'gad_source', 'gclsrc', 'fbclid', 'msclkid',
+        'is_sa', 'android-min-version', 'ios-min-version', 'campaign_id', 'pt', 'mt', 'ct',
+        'gad_campaignid', 'mc_cid', 'mc_eid', 'ref_src'
+      ];
+      trackingParams.forEach(p => u.searchParams.delete(p));
+      Array.from(u.searchParams.keys()).forEach(key => {
+        if (key.toLowerCase().startsWith('utm_')) u.searchParams.delete(key);
+      });
+
+      let display = u.origin + (u.pathname === '/' ? '' : u.pathname);
+      const cleanSearch = u.search;
+      if (cleanSearch && cleanSearch.length > 1) {
+        if (cleanSearch.length > 32) {
+          display += cleanSearch.substring(0, 29) + '...';
+        } else {
+          display += cleanSearch;
+        }
+      }
+
+      if (display.length > maxLen) {
+        return display.substring(0, maxLen - 3) + '...';
+      }
+      return display;
+    } catch {
+      if (rawUrl.length > maxLen) {
+        return rawUrl.substring(0, maxLen - 3) + '...';
+      }
+      return rawUrl;
+    }
+  }
+
+  // Format sleek, readable tooltip
+  function formatBookmarkTooltip(title, url) {
+    const cleanUrl = getCleanDisplayUrl(url);
+    if (!title || title.trim() === 'Untitled' || title.trim() === '') {
+      return cleanUrl;
+    }
+    return `${title.trim()}\n${cleanUrl}`;
+  }
+
   // Show / Hide Functions
   function showBar() {
     if (!settings.enabled) return;
@@ -318,7 +365,7 @@
     const a = document.createElement('a');
     a.className = 'ab-item ab-bookmark';
     a.href = item.url || '#';
-    a.title = `${item.title || 'Untitled'}\n${item.url || ''}`;
+    a.title = formatBookmarkTooltip(item.title, item.url);
 
     if (settings.showFavicons && item.url) {
       const img = document.createElement('img');
@@ -358,7 +405,7 @@
       const a = document.createElement('a');
       a.className = 'ab-dropdown-item';
       a.href = child.url;
-      a.title = `${child.title || 'Untitled'}\n${child.url}`;
+      a.title = formatBookmarkTooltip(child.title, child.url);
 
       if (settings.showFavicons) {
         const img = document.createElement('img');
@@ -662,7 +709,7 @@
           const a = document.createElement('a');
           a.className = 'ab-dropdown-item';
           a.href = item.url;
-          a.title = `${item.title}\n${item.url}`;
+          a.title = formatBookmarkTooltip(item.title, item.url);
 
           const img = document.createElement('img');
           img.className = 'ab-favicon';
