@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AutoBookmark — by Sinary</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="popup-container">
     <!-- Header -->
@@ -13,7 +15,7 @@
       <div class="logo-group">
         <img src="icons/icon48.png" alt="AutoBookmark Logo" class="logo-icon">
         <div>
-          <h1 class="title">AutoBookmark <span class="version-badge" id="headerVersionBadge">v1.0.0</span></h1>
+          <h1 class="title">AutoBookmark <span class="version-badge" id="headerVersionBadge"></span></h1>
           <a href="https://sinary.org" target="_blank" class="sinary-badge" title="Developed by sinary.org developers">
             <img src="icons/sinary-icon.png" class="sinary-badge-icon" alt="Sinary">
             <span>by sinary.org</span>
@@ -39,7 +41,8 @@
     <div class="search-section">
       <div class="search-box">
         <svg class="icon-search" viewBox="0 0 24 24">
-          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          <path
+            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
         </svg>
         <input type="text" id="popupSearchInput" placeholder="Search all bookmarks...">
       </div>
@@ -161,17 +164,19 @@
     <div class="version-card">
       <div class="version-card-left">
         <svg class="github-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          <path
+            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
         </svg>
         <div class="version-meta">
           <div class="version-heading">
             <span class="version-title">GitHub Release</span>
-            <span class="version-pill" id="currentVersionPill">v1.0.0</span>
+            <span class="version-pill" id="currentVersionPill"></span>
           </div>
           <span class="version-status" id="versionStatusText">Checking GitHub for updates...</span>
         </div>
       </div>
-      <a href="https://github.com/sinaryorg/chrome-autobookmark-extension/releases" target="_blank" class="version-action-btn" id="versionActionBtn" title="View GitHub Releases">
+      <a href="https://github.com/sinaryorg/chrome-autobookmark-extension/releases" target="_blank"
+        class="version-action-btn" id="versionActionBtn" title="View GitHub Releases">
         Releases ↗
       </a>
     </div>
@@ -188,4 +193,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>

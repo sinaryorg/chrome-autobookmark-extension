@@ -1,8 +1,16 @@
 import zipfile
+import json
 import os
+import shutil
 
 os.makedirs("dist", exist_ok=True)
-zip_path = os.path.join("dist", "AutoBookmark-v1.0.0.zip")
+
+with open("manifest.json", "r", encoding="utf-8") as f:
+    manifest = json.load(f)
+version = manifest.get("version", "1.0.0")
+
+zip_path = os.path.join("dist", f"AutoBookmark-v{version}.zip")
+latest_alias = os.path.join("dist", "AutoBookmark.zip")
 
 if os.path.exists(zip_path):
     os.remove(zip_path)
@@ -33,6 +41,8 @@ with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
                     zf.write(full_path, arcname)
 
 print(f"Successfully packaged {zip_path}")
+shutil.copyfile(zip_path, latest_alias)
+print(f"Also updated {latest_alias}")
 with zipfile.ZipFile(zip_path, "r") as zf:
     for name in zf.namelist():
         print(f"  - {name}")

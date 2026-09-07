@@ -18,8 +18,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -48,8 +52,14 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icons/*", "content.css", "sinary-logo.svg"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "icons/*",
+        "content.css",
+        "sinary-logo.svg"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

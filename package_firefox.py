@@ -3,14 +3,16 @@ import json
 import os
 
 os.makedirs("dist", exist_ok=True)
-zip_path = os.path.join("dist", "AutoBookmark-firefox-v1.0.0.zip")
-
-if os.path.exists(zip_path):
-    os.remove(zip_path)
 
 # Load base manifest and adapt for Firefox Manifest V3
 with open("manifest.json", "r", encoding="utf-8") as f:
     manifest = json.load(f)
+
+version = manifest.get("version", "1.0.0")
+zip_path = os.path.join("dist", f"AutoBookmark-firefox-v{version}.zip")
+
+if os.path.exists(zip_path):
+    os.remove(zip_path)
 
 # Firefox requires gecko ID and data_collection_permissions in browser_specific_settings
 manifest["browser_specific_settings"] = {

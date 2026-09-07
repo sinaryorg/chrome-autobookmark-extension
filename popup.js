@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } catch (err) {
-        if (statusText) statusText.textContent = 'GitHub Release v1.0.0';
+        if (statusText) statusText.textContent = `GitHub Release ${currentV}`;
       }
     }
 
