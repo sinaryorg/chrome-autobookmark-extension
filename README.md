@@ -34,7 +34,10 @@ AutoBookmark is built with cross-browser compatibility and runs natively across 
 
 - **⚡ Hover-Activated Slide-in**: Move your cursor to the top edge of any webpage (within 8px) to reveal your bookmarks.
 - **🍃 Smooth Auto-Hide**: Slides away smoothly when you move your cursor back into the page content.
-- **📁 Full Folder Dropdowns**: Browse multi-level nested folders with flyout submenus.
+- **🔀 Drag-and-Drop Organization**: Reorder bookmarks and folders on the fly with animated insertion guidelines and folder-drop targets.
+- **🖱️ Right-Click Context Menu**: Full management at your fingertips — Open in New Tab, Edit Bookmark, Rename Folder, and Delete.
+- **✏️ In-Place Edit & Rename**: Update titles and URLs directly from the bar with sleek glassmorphic modal dialogs.
+- **📁 Multi-Level Folder Dropdowns**: Browse deep nested subfolders with seamless connected flyout portals.
 - **🔍 Connected Search with Bevel**: Instant bookmark search connected seamlessly to the navbar with a curved bevel fillet and glass highlight.
 - **📌 Pin Anytime**: Press <kbd>Alt + B</kbd> or click the 📌 pin button to keep the bar visible while working.
 - **🛡️ 100% Shadow DOM Isolated**: Injected with an open Shadow DOM root — zero CSS conflicts with any website.
@@ -164,14 +167,46 @@ AutoBookmark is developed and maintained by the **[sinary.org](https://sinary.or
 
 ---
 
-## 🗺️ What's Coming in v1.1.0 (Roadmap)
+## 📦 Version History & Release Notes
 
-We are actively planning the next major update! See **[ROADMAP.md](ROADMAP.md)** for technical specifications:
-1. ✏️ **Edit Added Bookmarks**: Directly update title and URL.
-2. 🗑️ **Remove Added Bookmarks**: 1-click or right-click deletion.
-3. 📂 **Open & Explore Folders**: Deep folder browsing and "Open All in Tabs".
-4. 🔀 **Drag-and-Drop Organization**: Reorder bookmarks and drop into folders.
-5. 📁 **Create & Delete Folders**: Complete folder lifecycle management.
+### 🚀 Version 1.1.0 *(Current Release)*
+
+Version 1.1.0 is a major update adding full in-place bookmark management, drag-and-drop reordering, and multi-level subfolder navigation:
+
+- **🔀 Drag-and-Drop Bookmark Organization**:
+  - Reorder bookmarks directly on the floating bar, inside folder dropdowns, and within nested submenus.
+  - Drop bookmarks onto folders to organize them instantly.
+  - Live animated drop indicator guidelines indicating exact insertion points.
+  - Accurate index boundary math ensuring proper placement when moving items to the top, middle, or bottom of folders.
+- **🖱️ Custom Right-Click Context Menu**:
+  - Modern glassmorphic context menu for bookmarks, folders, and subfolders.
+  - **Open in New Tab**: Quickly open any bookmark in a new background or foreground tab.
+  - **Edit Bookmark / Rename Folder**: Launch centered glassmorphic modal editors to update bookmark titles and URLs or folder names.
+  - **Delete Bookmark / Delete Folder**: Safe deletion with confirmation dialogs (including recursive folder cleanup for non-empty folders).
+- **📁 Multi-Level Subfolder Navigation**:
+  - Deep nested subfolder support with seamless flyout portals.
+  - Connected concave fillet wings matching parent dropdowns with zero gap.
+  - Smart hover de-escalation: hovering over regular bookmarks or bar controls automatically dismisses open folder dropdowns.
+- **🛡️ Stacking & Z-Index Architecture**:
+  - Stratified Shadow DOM z-index hierarchy ensuring context menus and modals always render strictly above all submenus and dropdowns.
+  - Prevents menus from hiding behind subfolder portals or closing prematurely during interaction.
+
+---
+
+### 🌟 Version 1.0.0 *(Initial Release)*
+
+- Hover-activated auto-hiding floating bookmark bar.
+- Shadow DOM isolation preventing styling conflicts with host websites.
+- 4 curated themes (Dark Glass, Modern Light, AMOLED Black, Classic Chrome).
+- Connected search bar with curved bevel fillet highlight.
+- Quick pin shortcut (<kbd>Alt + B</kbd>) and toolbar pin button.
+- Cross-browser support for Chrome, Edge, Firefox, Brave, Opera, and Vivaldi.
+
+---
+
+## 🗺️ Roadmap & Upcoming Features
+
+We are continually improving AutoBookmark! Check out **[ROADMAP.md](ROADMAP.md)** for planned future updates (v1.2.0+), including "+ New Folder" buttons, "Open All in Tabs" batch folder actions, and bookmark count badges!
 
 ---
 
