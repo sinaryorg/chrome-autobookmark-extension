@@ -83,9 +83,9 @@ Every release provides two dedicated packages tailored for specific browser engi
 
 👉 **[Download Latest GitHub Release](https://github.com/sinaryorg/chrome-autobookmark-extension/releases/latest)**
 
-#### 📦 For Chrome, Edge, Brave, Opera, Vivaldi (`AutoBookmark.zip`)
-1. Download **`AutoBookmark.zip`** from the latest release.
-2. Unzip `AutoBookmark.zip` into a folder on your computer.
+#### 📦 For Chrome, Edge, Brave, Opera, Vivaldi (`AutoBookmark-v1.1.0.zip`)
+1. Download **`AutoBookmark-v1.1.0.zip`** from the latest release.
+2. Unzip `AutoBookmark-v1.1.0.zip` into a folder on your computer.
 3. Open your browser's extension page:
    - **Chrome**: `chrome://extensions`
    - **Edge**: `edge://extensions`
@@ -94,14 +94,14 @@ Every release provides two dedicated packages tailored for specific browser engi
 4. Toggle ON **Developer mode** (top-right corner switch).
 5. Click **"Load unpacked"** (top-left) and select the extracted folder.
 
-#### 🦊 For Mozilla Firefox (`AutoBookmark-firefox.zip`)
-1. Download **`AutoBookmark-firefox.zip`** from the latest release.
+#### 🦊 For Mozilla Firefox (`AutoBookmark-firefox-v1.1.0.zip`)
+1. Download **`AutoBookmark-firefox-v1.1.0.zip`** from the latest release.
 2. Open Firefox and navigate to:
    ```text
    about:debugging#/runtime/this-firefox
    ```
 3. Click **"Load Temporary Add-on..."** (top-right).
-4. Select the downloaded `AutoBookmark-firefox.zip` file directly (or extract and select its `manifest.json`).
+4. Select the downloaded `AutoBookmark-firefox-v1.1.0.zip` file directly (or extract and select its `manifest.json`).
 5. Done! The AutoBookmark bar is active immediately on Firefox.
 
 ---
