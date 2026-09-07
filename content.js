@@ -32,6 +32,9 @@
   let isBarVisible = false;
   let isPinned = false;
   let activeFolderItem = null;
+  let isContextMenuOpen = false;
+  let isModalOpen = false;
+  let activeContextTarget = null;
 
   // Create Shadow Host
   const host = document.createElement('div');
@@ -173,9 +176,42 @@
     scheduleHide();
   });
 
+  // Custom Context Menu attached to shadow root
+  const contextMenu = document.createElement('div');
+  contextMenu.className = 'ab-context-menu';
+
+  contextMenu.addEventListener('mouseenter', () => {
+    isMouseInsideDropdown = true;
+    clearTimeout(hideTimer);
+  });
+
+  contextMenu.addEventListener('mouseleave', () => {
+    isMouseInsideDropdown = false;
+    scheduleHide();
+  });
+
+  // Edit / Delete Modal Backdrop attached to shadow root
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'ab-modal-backdrop';
+  const modalContainer = document.createElement('div');
+  modalContainer.className = 'ab-modal';
+  modalBackdrop.appendChild(modalContainer);
+
+  modalBackdrop.addEventListener('mouseenter', () => {
+    isMouseInsideDropdown = true;
+    clearTimeout(hideTimer);
+  });
+
+  modalBackdrop.addEventListener('mouseleave', () => {
+    isMouseInsideDropdown = false;
+    scheduleHide();
+  });
+
   shadow.appendChild(triggerZone);
   shadow.appendChild(barContainer);
   shadow.appendChild(dropdownPortal);
+  shadow.appendChild(contextMenu);
+  shadow.appendChild(modalBackdrop);
 
   // Append host to DOM safely
   function mountHost() {
@@ -300,10 +336,10 @@
   }
 
   function scheduleHide() {
-    if (isPinned || !isBarVisible || isDraggingBookmark) return;
+    if (isPinned || !isBarVisible || isDraggingBookmark || isContextMenuOpen || isModalOpen) return;
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
-      if (!isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark) {
+      if (!isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark && !isContextMenuOpen && !isModalOpen) {
         closeAllDropdowns();
         closeSearch();
         isBarVisible = false;
@@ -374,6 +410,295 @@
     }
   }
 
+  // Helper: HTML escaping
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // Root folders should not be deleted
+  function isRootFolder(id) {
+    if (!id) return true;
+    const rootIds = ['0', '1', '2', 'root________', 'toolbar_____', 'unfiled_____', 'menu________'];
+    if (rootIds.includes(String(id))) return true;
+    if (barFolderId && String(id) === String(barFolderId)) return true;
+    return false;
+  }
+
+  function closeContextMenu() {
+    if (!isContextMenuOpen) return;
+    isContextMenuOpen = false;
+    contextMenu.classList.remove('ab-show');
+    contextMenu.innerHTML = '';
+    activeContextTarget = null;
+    scheduleHide();
+  }
+
+  function closeModal() {
+    if (!isModalOpen) return;
+    isModalOpen = false;
+    modalBackdrop.classList.remove('ab-show');
+    modalContainer.innerHTML = '';
+    scheduleHide();
+  }
+
+  function openEditModal(itemData) {
+    if (!itemData || !itemData.id) return;
+    isModalOpen = true;
+    clearTimeout(hideTimer);
+    showBar();
+
+    const isFolder = !!itemData.isFolder;
+    const titleText = isFolder ? 'Rename Folder' : 'Edit Bookmark';
+
+    modalContainer.innerHTML = `
+      <div class="ab-modal-header">
+        <h3 class="ab-modal-title">
+          <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <span>${titleText}</span>
+        </h3>
+        <button type="button" class="ab-modal-close-btn" title="Close (Esc)">✕</button>
+      </div>
+      <form class="ab-modal-body">
+        <div class="ab-form-group">
+          <label class="ab-form-label">Name</label>
+          <input type="text" class="ab-form-input ab-edit-name-input" value="${escapeHtml(itemData.title || '')}" spellcheck="false" autocomplete="off" />
+        </div>
+        ${!isFolder ? `
+        <div class="ab-form-group">
+          <label class="ab-form-label">URL</label>
+          <input type="text" class="ab-form-input ab-edit-url-input" value="${escapeHtml(itemData.url || '')}" spellcheck="false" autocomplete="off" />
+        </div>
+        ` : ''}
+        <div class="ab-modal-actions">
+          <button type="button" class="ab-btn ab-btn-secondary ab-modal-cancel">Cancel</button>
+          <button type="submit" class="ab-btn ab-btn-primary ab-modal-save">Save</button>
+        </div>
+      </form>
+    `;
+
+    modalBackdrop.classList.add('ab-show');
+
+    const form = modalContainer.querySelector('form');
+    const nameInput = modalContainer.querySelector('.ab-edit-name-input');
+    const urlInput = modalContainer.querySelector('.ab-edit-url-input');
+    const closeBtn = modalContainer.querySelector('.ab-modal-close-btn');
+    const cancelBtn = modalContainer.querySelector('.ab-modal-cancel');
+
+    closeBtn.addEventListener('click', () => closeModal());
+    cancelBtn.addEventListener('click', () => closeModal());
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newName = nameInput.value.trim();
+      const payload = { type: 'UPDATE_BOOKMARK', id: itemData.id, title: newName };
+
+      if (!isFolder && urlInput) {
+        let newUrl = urlInput.value.trim();
+        if (newUrl) {
+          if (!/^https?:\/\//i.test(newUrl) && !/^(chrome|edge|about|moz-extension|chrome-extension|javascript):\/\//i.test(newUrl)) {
+            newUrl = 'https://' + newUrl;
+          }
+          payload.url = newUrl;
+        }
+      }
+
+      chrome.runtime.sendMessage(payload, () => {});
+      closeModal();
+    });
+
+    setTimeout(() => {
+      if (nameInput) {
+        nameInput.focus();
+        nameInput.select();
+      }
+    }, 50);
+  }
+
+  function openDeleteConfirmModal(itemData) {
+    if (!itemData || !itemData.id) return;
+    if (isRootFolder(itemData.id)) return;
+
+    isModalOpen = true;
+    clearTimeout(hideTimer);
+    showBar();
+
+    const isFolder = !!itemData.isFolder;
+    const titleText = isFolder ? 'Delete Folder' : 'Delete Bookmark';
+    const promptText = isFolder
+      ? 'Are you sure you want to delete this folder and all bookmarks inside it?'
+      : 'Are you sure you want to delete this bookmark?';
+
+    modalContainer.innerHTML = `
+      <div class="ab-modal-header">
+        <h3 class="ab-modal-title" style="color: #f87171;">
+          <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+          <span>${titleText}</span>
+        </h3>
+        <button type="button" class="ab-modal-close-btn" title="Close (Esc)">✕</button>
+      </div>
+      <div class="ab-modal-body">
+        <p class="ab-modal-prompt">${promptText}</p>
+        <div class="ab-modal-item-preview">
+          <span style="opacity:0.6;margin-right:4px;">${isFolder ? '📁' : '🔗'}</span>
+          <span>${escapeHtml(itemData.title || (isFolder ? 'Folder' : 'Bookmark'))}</span>
+        </div>
+        <div class="ab-modal-actions">
+          <button type="button" class="ab-btn ab-btn-secondary ab-modal-cancel">Cancel</button>
+          <button type="button" class="ab-btn ab-btn-danger ab-modal-confirm-delete">Delete</button>
+        </div>
+      </div>
+    `;
+
+    modalBackdrop.classList.add('ab-show');
+
+    const closeBtn = modalContainer.querySelector('.ab-modal-close-btn');
+    const cancelBtn = modalContainer.querySelector('.ab-modal-cancel');
+    const deleteBtn = modalContainer.querySelector('.ab-modal-confirm-delete');
+
+    closeBtn.addEventListener('click', () => closeModal());
+    cancelBtn.addEventListener('click', () => closeModal());
+
+    deleteBtn.addEventListener('click', () => {
+      chrome.runtime.sendMessage({
+        type: 'DELETE_BOOKMARK',
+        id: itemData.id,
+        isFolder: !!itemData.isFolder
+      }, () => {});
+      closeModal();
+    });
+
+    setTimeout(() => {
+      if (deleteBtn) deleteBtn.focus();
+    }, 50);
+  }
+
+  function handleContextMenu(e, itemData) {
+    if (!itemData || !itemData.id) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    closeContextMenu();
+    isContextMenuOpen = true;
+    activeContextTarget = itemData;
+    clearTimeout(hideTimer);
+    showBar();
+
+    const isFolder = !!itemData.isFolder;
+    const canDelete = !isRootFolder(itemData.id);
+
+    contextMenu.innerHTML = '';
+
+    if (!isFolder && itemData.url) {
+      const openTabItem = document.createElement('div');
+      openTabItem.className = 'ab-context-item';
+      openTabItem.innerHTML = `
+        <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        <span>Open in New Tab</span>
+      `;
+      openTabItem.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        closeContextMenu();
+        window.open(itemData.url, '_blank');
+      });
+      contextMenu.appendChild(openTabItem);
+    }
+
+    const editItem = document.createElement('div');
+    editItem.className = 'ab-context-item';
+    editItem.innerHTML = `
+      <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      <span>${isFolder ? 'Rename Folder...' : 'Edit Bookmark...'}</span>
+    `;
+    editItem.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeContextMenu();
+      openEditModal(itemData);
+    });
+    contextMenu.appendChild(editItem);
+
+    if (canDelete) {
+      const sep = document.createElement('div');
+      sep.className = 'ab-context-separator';
+      contextMenu.appendChild(sep);
+
+      const deleteItem = document.createElement('div');
+      deleteItem.className = 'ab-context-item ab-danger';
+      deleteItem.innerHTML = `
+        <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+        <span>${isFolder ? 'Delete Folder' : 'Delete Bookmark'}</span>
+      `;
+      deleteItem.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        closeContextMenu();
+        openDeleteConfirmModal(itemData);
+      });
+      contextMenu.appendChild(deleteItem);
+    }
+
+    contextMenu.classList.add('ab-show');
+
+    // Clamp coordinates so menu stays inside viewport
+    const menuWidth = 185;
+    const menuHeight = isFolder ? 80 : 120;
+    const posX = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
+    const posY = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
+    contextMenu.style.left = `${Math.max(8, posX)}px`;
+    contextMenu.style.top = `${Math.max(8, posY)}px`;
+  }
+
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener('click', (e) => {
+    if (isContextMenuOpen) {
+      const path = e.composedPath ? e.composedPath() : [];
+      if (!path.includes(contextMenu)) {
+        closeContextMenu();
+      }
+    }
+  }, true);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (isModalOpen) {
+        closeModal();
+        e.stopPropagation();
+      } else if (isContextMenuOpen) {
+        closeContextMenu();
+        e.stopPropagation();
+      }
+    }
+  }, true);
+
   // Helper: Find vertical drop target position within a dropdown or submenu scroll container
   function getDropPositionInContainer(container, clientY) {
     const items = Array.from(container.querySelectorAll('.ab-dropdown-item:not(.ab-dragging)'));
@@ -423,6 +748,7 @@
   }
 
   function closeAllDropdowns() {
+    closeContextMenu();
     closeAllSubmenus();
     dropdownPortal.classList.remove('ab-has-submenu-right', 'ab-has-submenu-left');
     if (activeFolderItem) {
@@ -673,6 +999,16 @@
         e.preventDefault();
         window.open(item.url, '_blank');
       }
+    });
+
+    a.addEventListener('contextmenu', (e) => {
+      handleContextMenu(e, {
+        id: item.id,
+        title: item.title,
+        url: item.url,
+        isFolder: false,
+        parentId: item.parentId || barFolderId
+      });
     });
 
     return a;
@@ -965,6 +1301,16 @@
         }
       });
 
+      a.addEventListener('contextmenu', (e) => {
+        handleContextMenu(e, {
+          id: child.id,
+          title: child.title,
+          url: child.url,
+          isFolder: false,
+          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId)
+        });
+      });
+
       return a;
     } else if (child.children) {
       // Subfolder
@@ -973,6 +1319,15 @@
       folderDiv.draggable = true;
       folderDiv.dataset.bookmarkId = child.id;
       folderDiv.dataset.parentId = child.parentId || (parentFolder ? parentFolder.id : barFolderId);
+
+      folderDiv.addEventListener('contextmenu', (e) => {
+        handleContextMenu(e, {
+          id: child.id,
+          title: child.title,
+          isFolder: true,
+          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId)
+        });
+      });
       folderDiv.tabIndex = 0;
       folderDiv.setAttribute('role', 'button');
       folderDiv.setAttribute('aria-haspopup', 'true');
@@ -1179,9 +1534,16 @@
 
     div.addEventListener('mouseleave', () => {
       clearTimeout(folderHoverTimer);
-      if (!isDraggingBookmark) {
-        scheduleHide();
-      }
+      scheduleHide();
+    });
+
+    div.addEventListener('contextmenu', (e) => {
+      handleContextMenu(e, {
+        id: folder.id,
+        title: folder.title,
+        isFolder: true,
+        parentId: folder.parentId || barFolderId
+      });
     });
 
     // Keyboard support: Enter, Space, Escape
@@ -1563,6 +1925,16 @@
               }
             });
 
+            a.addEventListener('contextmenu', (e) => {
+              handleContextMenu(e, {
+                id: item.id,
+                title: item.title,
+                url: item.url,
+                isFolder: false,
+                parentId: item.parentId
+              });
+            });
+
             scrollContainer.appendChild(a);
           });
         }
@@ -1639,7 +2011,7 @@
 
     if (isAtTriggerEdge) {
       showBar();
-    } else if (isBarVisible && !isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark) {
+    } else if (isBarVisible && !isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark && !isContextMenuOpen && !isModalOpen) {
       // Check if mouse is beyond bar threshold (38px + buffer)
       const isPastBar = (settings.barPosition === 'bottom')
         ? (window.innerHeight - e.clientY > 50)

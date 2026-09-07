@@ -151,5 +151,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'UPDATE_BOOKMARK') {
+    const changes = {};
+    if (request.title !== undefined) changes.title = String(request.title);
+    if (request.url !== undefined) changes.url = String(request.url);
+
+    chrome.bookmarks.update(String(request.id), changes)
+      .then(result => {
+        sendResponse({ success: true, result });
+      })
+      .catch(err => {
+        console.error('Failed to update bookmark:', err);
+        sendResponse({ success: false, error: err.message });
+      });
+    return true;
+  }
+
+  if (request.type === 'DELETE_BOOKMARK') {
+    const isFolder = !!request.isFolder;
+    const deleteAction = isFolder
+      ? chrome.bookmarks.removeTree(String(request.id))
+      : chrome.bookmarks.remove(String(request.id));
+
+    deleteAction
+      .then(() => {
+        sendResponse({ success: true });
+      })
+      .catch(err => {
+        console.error('Failed to delete bookmark:', err);
+        sendResponse({ success: false, error: err.message });
+      });
+    return true;
+  }
+
   return false;
 });
