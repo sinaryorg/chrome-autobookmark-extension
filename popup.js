@@ -299,8 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // GitHub Release Version & Update Checker
   function initVersionChecker() {
-    const manifestVersion = chrome.runtime.getManifest()?.version || '1.0.0';
-    const currentV = `v${manifestVersion}`;
+    const manifestVersion = chrome.runtime.getManifest()?.version || '';
+    const currentV = manifestVersion ? `v${manifestVersion}` : '';
 
     const headerBadge = document.getElementById('headerVersionBadge');
     const currentPill = document.getElementById('currentVersionPill');

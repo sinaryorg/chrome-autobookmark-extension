@@ -7,7 +7,7 @@ os.makedirs("dist", exist_ok=True)
 
 with open("manifest.json", "r", encoding="utf-8") as f:
     manifest = json.load(f)
-version = manifest.get("version", "1.0.0")
+version = manifest["version"]
 
 zip_path = os.path.join("dist", f"AutoBookmark-v{version}.zip")
 latest_alias = os.path.join("dist", "AutoBookmark.zip")
