@@ -134,8 +134,26 @@
   bar.appendChild(rightActions);
   barContainer.appendChild(bar);
 
+  // Dedicated Dropdown Portal attached to shadow root (never clipped by track overflow)
+  const dropdownPortal = document.createElement('div');
+  dropdownPortal.className = 'ab-dropdown-portal';
+
+  dropdownPortal.addEventListener('mouseenter', () => {
+    isMouseInsideDropdown = true;
+    clearTimeout(hideTimer);
+  });
+
+  dropdownPortal.addEventListener('mouseleave', (e) => {
+    if (e.relatedTarget && activeFolderItem && activeFolderItem.contains(e.relatedTarget)) {
+      return;
+    }
+    isMouseInsideDropdown = false;
+    scheduleHide();
+  });
+
   shadow.appendChild(triggerZone);
   shadow.appendChild(barContainer);
+  shadow.appendChild(dropdownPortal);
 
   // Append host to DOM safely
   function mountHost() {
@@ -200,12 +218,71 @@
     }
   }
 
-  // Dropdown Handling
+  // Dropdown Handling via Portal
   function closeAllDropdowns() {
-    shadow.querySelectorAll('.ab-item.ab-open').forEach(el => {
-      el.classList.remove('ab-open');
-    });
-    activeFolderItem = null;
+    if (activeFolderItem) {
+      activeFolderItem.classList.remove('ab-open');
+      activeFolderItem = null;
+    }
+    dropdownPortal.classList.remove('ab-show');
+    dropdownPortal.innerHTML = '';
+    isMouseInsideDropdown = false;
+  }
+
+  function openFolderDropdown(folder, folderElement) {
+    if (activeFolderItem === folderElement && dropdownPortal.classList.contains('ab-show')) {
+      closeAllDropdowns();
+      return;
+    }
+
+    if (activeFolderItem) {
+      activeFolderItem.classList.remove('ab-open');
+    }
+
+    activeFolderItem = folderElement;
+    folderElement.classList.add('ab-open');
+
+    dropdownPortal.innerHTML = '';
+    dropdownPortal.className = `ab-dropdown-portal ab-theme-${settings.theme || 'dark-glass'} ab-show`;
+
+    if (settings.barPosition === 'bottom') {
+      dropdownPortal.classList.add('ab-portal-bottom');
+    } else {
+      dropdownPortal.classList.remove('ab-portal-bottom');
+    }
+
+    if (!folder.children || folder.children.length === 0) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'ab-empty-msg';
+      emptyMsg.textContent = 'Folder is empty';
+      dropdownPortal.appendChild(emptyMsg);
+    } else {
+      folder.children.forEach(child => {
+        const childNode = createDropdownNode(child);
+        if (childNode) dropdownPortal.appendChild(childNode);
+      });
+    }
+
+    // Position portal directly relative to folder chip
+    const rect = folderElement.getBoundingClientRect();
+    const isBottom = settings.barPosition === 'bottom';
+
+    if (isBottom) {
+      dropdownPortal.style.top = 'auto';
+      dropdownPortal.style.bottom = `${window.innerHeight - rect.top + 3}px`;
+    } else {
+      dropdownPortal.style.top = `${rect.bottom + 3}px`;
+      dropdownPortal.style.bottom = 'auto';
+    }
+
+    // Clamp left so dropdown stays fully on screen
+    const maxLeft = Math.max(8, window.innerWidth - 340);
+    const clampedLeft = Math.max(8, Math.min(rect.left, maxLeft));
+    dropdownPortal.style.left = `${clampedLeft}px`;
+
+    clearTimeout(hideTimer);
+    isMouseInsideDropdown = true;
+    showBar();
   }
 
   // Create Bookmark Chip Element
@@ -260,7 +337,7 @@
       const a = document.createElement('a');
       a.className = 'ab-dropdown-item';
       a.href = child.url;
-      a.title = `${child.title}\n${child.url}`;
+      a.title = `${child.title || 'Untitled'}\n${child.url}`;
 
       if (settings.showFavicons) {
         const img = document.createElement('img');
@@ -279,12 +356,22 @@
 
       a.addEventListener('click', (e) => {
         e.preventDefault();
+        closeAllDropdowns();
         if (settings.openInNewTab || e.ctrlKey || e.metaKey || e.button === 1) {
           window.open(child.url, '_blank');
         } else {
           window.location.href = child.url;
         }
       });
+
+      a.addEventListener('auxclick', (e) => {
+        if (e.button === 1 && child.url) {
+          e.preventDefault();
+          closeAllDropdowns();
+          window.open(child.url, '_blank');
+        }
+      });
+
       return a;
     } else if (child.children) {
       // Subfolder
@@ -321,10 +408,28 @@
         submenu.appendChild(empty);
       } else {
         child.children.forEach(subChild => {
-          submenu.appendChild(createDropdownNode(subChild));
+          const subNode = createDropdownNode(subChild);
+          if (subNode) submenu.appendChild(subNode);
         });
       }
       folderDiv.appendChild(submenu);
+
+      // Reposition submenu if near right edge
+      folderDiv.addEventListener('mouseenter', () => {
+        const rect = folderDiv.getBoundingClientRect();
+        if (rect.right + 220 > window.innerWidth) {
+          submenu.style.left = 'auto';
+          submenu.style.right = '100%';
+          submenu.style.marginLeft = '0';
+          submenu.style.marginRight = '4px';
+        } else {
+          submenu.style.left = '100%';
+          submenu.style.right = 'auto';
+          submenu.style.marginLeft = '4px';
+          submenu.style.marginRight = '0';
+        }
+      });
+
       return folderDiv;
     }
     return null;
@@ -335,6 +440,9 @@
     const div = document.createElement('div');
     div.className = 'ab-item ab-folder';
     div.tabIndex = 0;
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-haspopup', 'true');
+    div.title = `${folder.title || 'Folder'} (${(folder.children || []).length} items)\nClick to open`;
 
     const folderIcon = document.createElement('span');
     folderIcon.className = 'ab-folder-icon';
@@ -355,44 +463,52 @@
     arrowSpan.textContent = '▼';
     div.appendChild(arrowSpan);
 
-    // Dropdown container
-    const dropdown = document.createElement('div');
-    dropdown.className = 'ab-dropdown';
+    let folderHoverTimer = null;
 
-    if (!folder.children || folder.children.length === 0) {
-      const emptyMsg = document.createElement('div');
-      emptyMsg.className = 'ab-empty-msg';
-      emptyMsg.textContent = 'Folder is empty';
-      dropdown.appendChild(emptyMsg);
-    } else {
-      folder.children.forEach(child => {
-        const childNode = createDropdownNode(child);
-        if (childNode) dropdown.appendChild(childNode);
-      });
-    }
+    // Click on folder chip: toggles the folder dropdown
+    div.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearTimeout(folderHoverTimer);
+      if (activeFolderItem === div) {
+        closeAllDropdowns();
+      } else {
+        openFolderDropdown(folder, div);
+      }
+    });
 
-    div.appendChild(dropdown);
-
-    // Toggle on click / hover
+    // Hover over folder: if already browsing folders, switch instantly; otherwise dwell
     div.addEventListener('mouseenter', () => {
-      isMouseInsideDropdown = true;
       clearTimeout(hideTimer);
       if (activeFolderItem && activeFolderItem !== div) {
-        activeFolderItem.classList.remove('ab-open');
+        openFolderDropdown(folder, div);
+      } else if (!activeFolderItem) {
+        folderHoverTimer = setTimeout(() => {
+          if (div.matches(':hover')) {
+            openFolderDropdown(folder, div);
+          }
+        }, 220);
       }
-      div.classList.add('ab-open');
-      activeFolderItem = div;
     });
 
     div.addEventListener('mouseleave', () => {
-      isMouseInsideDropdown = false;
+      clearTimeout(folderHoverTimer);
       scheduleHide();
     });
 
-    div.addEventListener('click', (e) => {
-      if (e.target.closest('.ab-dropdown-item')) return;
-      div.classList.toggle('ab-open');
-      activeFolderItem = div.classList.contains('ab-open') ? div : null;
+    // Keyboard support: Enter, Space, Escape
+    div.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (activeFolderItem === div) {
+          closeAllDropdowns();
+        } else {
+          openFolderDropdown(folder, div);
+        }
+      } else if (e.key === 'Escape') {
+        closeAllDropdowns();
+      }
     });
 
     return div;
@@ -400,6 +516,7 @@
 
   // Render All Bookmarks
   function renderBookmarks() {
+    closeAllDropdowns();
     itemsTrack.innerHTML = '';
 
     const allItems = [...bookmarksData, ...otherBookmarksData];
@@ -435,8 +552,36 @@
     else scrollRightBtn.classList.remove('ab-show');
   }
 
-  itemsTrack.addEventListener('scroll', updateScrollArrows, { passive: true });
-  window.addEventListener('resize', updateScrollArrows, { passive: true });
+  itemsTrack.addEventListener('scroll', () => {
+    updateScrollArrows();
+    if (activeFolderItem && dropdownPortal.classList.contains('ab-show')) {
+      const rect = activeFolderItem.getBoundingClientRect();
+      const trackRect = itemsTrack.getBoundingClientRect();
+      if (rect.right < trackRect.left || rect.left > trackRect.right) {
+        closeAllDropdowns();
+      } else {
+        const maxLeft = Math.max(8, window.innerWidth - 340);
+        const clampedLeft = Math.max(8, Math.min(rect.left, maxLeft));
+        dropdownPortal.style.left = `${clampedLeft}px`;
+      }
+    }
+  }, { passive: true });
+  window.addEventListener('resize', () => {
+    updateScrollArrows();
+    if (activeFolderItem && dropdownPortal.classList.contains('ab-show')) {
+      closeAllDropdowns();
+    }
+  }, { passive: true });
+
+  // Click outside to close active folder dropdown
+  document.addEventListener('click', (e) => {
+    if (activeFolderItem) {
+      const path = e.composedPath ? e.composedPath() : [];
+      if (!path.includes(host)) {
+        closeAllDropdowns();
+      }
+    }
+  }, true);
 
   scrollLeftBtn.addEventListener('click', () => {
     itemsTrack.scrollBy({ left: -220, behavior: 'smooth' });
@@ -557,6 +702,14 @@
 
     // Trigger Height
     triggerZone.style.height = `${settings.triggerHeight || 8}px`;
+
+    // Update active dropdown portal theme if open
+    if (activeFolderItem && dropdownPortal.classList.contains('ab-show')) {
+      dropdownPortal.className = `ab-dropdown-portal ab-theme-${settings.theme || 'dark-glass'} ab-show`;
+      if (settings.barPosition === 'bottom') {
+        dropdownPortal.classList.add('ab-portal-bottom');
+      }
+    }
 
     // Re-render bookmarks in case showFavicons changed
     renderBookmarks();
