@@ -10,6 +10,7 @@ with open("manifest.json", "r", encoding="utf-8") as f:
 
 version = manifest.get("version", "1.0.0")
 zip_path = os.path.join("dist", f"AutoBookmark-firefox-v{version}.zip")
+latest_alias = os.path.join("dist", "AutoBookmark-firefox.zip")
 
 if os.path.exists(zip_path):
     os.remove(zip_path)
@@ -61,6 +62,9 @@ with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
                     arcname = f"icons/{file}"
                     zf.write(full_path, arcname)
 
+import shutil
+shutil.copyfile(zip_path, latest_alias)
+print(f"Also updated {latest_alias}")
 print(f"Successfully packaged Firefox extension: {zip_path}")
 with zipfile.ZipFile(zip_path, "r") as zf:
     for name in zf.namelist():
