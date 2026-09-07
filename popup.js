@@ -130,6 +130,37 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.classList.remove('active');
       }
     });
+
+    updateAccordionSummaries(s);
+  }
+
+  // Accordion Summary Updates
+  const sumTiming = document.getElementById('sumTiming');
+  const sumAppearance = document.getElementById('sumAppearance');
+  const sumBehavior = document.getElementById('sumBehavior');
+
+  function updateAccordionSummaries(s) {
+    if (sumTiming) {
+      sumTiming.textContent = `${s.triggerHeight || 8}px • ${s.hideDelay || 450}ms`;
+    }
+    if (sumAppearance) {
+      const themeLabels = {
+        'dark-glass': 'Dark Glass',
+        'modern-light': 'Light',
+        'amoled': 'AMOLED',
+        'chrome': 'Classic'
+      };
+      const themeName = themeLabels[s.theme || 'dark-glass'] || 'Dark Glass';
+      const posName = (s.barPosition || 'top') === 'bottom' ? 'Bottom' : 'Top';
+      sumAppearance.textContent = `${themeName} • ${posName}`;
+    }
+    if (sumBehavior) {
+      const activeOptions = [];
+      if (s.openInNewTab) activeOptions.push('New Tab');
+      if (s.showFavicons !== false) activeOptions.push('Favicons');
+      if (s.showBookmarkUrl) activeOptions.push('URLs');
+      sumBehavior.textContent = activeOptions.length > 0 ? activeOptions.join(' • ') : 'Standard';
+    }
   }
 
   // Apply Theme directly to the popup window
@@ -170,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateStatus(currentSettings.enabled);
     applyPopupTheme(theme);
+    updateAccordionSummaries(currentSettings);
 
     // Save directly to storage
     chrome.storage.sync.set({ settings: currentSettings }, () => {
@@ -179,16 +211,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Accordion Expand/Collapse Interaction
+  const accordionItems = document.querySelectorAll('.accordion-item');
+  document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      e.preventDefault();
+      const currentItem = header.closest('.accordion-item');
+      if (!currentItem) return;
+      const isOpen = currentItem.classList.contains('open');
+
+      // Close other accordions for a compact, neat single-view
+      accordionItems.forEach(item => {
+        if (item !== currentItem) item.classList.remove('open');
+      });
+
+      // Toggle clicked item
+      currentItem.classList.toggle('open', !isOpen);
+    });
+  });
+
   // Input Listeners
   enableToggle.addEventListener('change', save);
 
   triggerHeight.addEventListener('input', () => {
     valTrigger.textContent = `${triggerHeight.value}px`;
+    if (sumTiming) sumTiming.textContent = `${triggerHeight.value}px • ${hideDelay.value}ms`;
   });
   triggerHeight.addEventListener('change', save);
 
   hideDelay.addEventListener('input', () => {
     valDelay.textContent = `${hideDelay.value}ms`;
+    if (sumTiming) sumTiming.textContent = `${triggerHeight.value}px • ${hideDelay.value}ms`;
   });
   hideDelay.addEventListener('change', save);
 

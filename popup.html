@@ -49,136 +49,207 @@
       <div id="popupSearchResults" class="search-results-list"></div>
     </div>
 
-    <!-- Settings Sections -->
-    <div class="settings-group">
-      <h2 class="section-title">Hover & Timing</h2>
-
-      <!-- Trigger Sensitivity -->
-      <div class="setting-item">
-        <div class="setting-label-row">
-          <span>Trigger Proximity</span>
-          <span class="val-badge" id="valTrigger">8px</span>
-        </div>
-        <input type="range" id="triggerHeight" min="2" max="25" value="8" class="range-slider">
-        <span class="setting-hint">Hover within this distance of the edge to reveal</span>
-      </div>
-
-      <!-- Hide Delay -->
-      <div class="setting-item">
-        <div class="setting-label-row">
-          <span>Auto-Hide Delay</span>
-          <span class="val-badge" id="valDelay">450ms</span>
-        </div>
-        <input type="range" id="hideDelay" min="100" max="1500" step="50" value="450" class="range-slider">
-        <span class="setting-hint">Delay before hiding after your mouse leaves</span>
-      </div>
-    </div>
-
-    <!-- Theme & Position -->
-    <div class="settings-group">
-      <h2 class="section-title">Appearance & Position</h2>
-
-      <div class="theme-grid">
-        <label class="theme-card">
-          <input type="radio" name="theme" value="dark-glass" checked>
-          <div class="theme-preview dark-glass">
-            <div class="bar-sample"></div>
+    <!-- Collapsible Accordion Sections -->
+    <div class="accordion-container">
+      
+      <!-- 1. Hover & Timing -->
+      <div class="accordion-item open" id="accTiming">
+        <button type="button" class="accordion-header" id="accHeaderTiming">
+          <div class="accordion-header-left">
+            <svg class="accordion-icon" viewBox="0 0 24 24">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+            </svg>
+            <span class="accordion-title">Hover & Timing</span>
           </div>
-          <span class="theme-name">Dark Glass</span>
-        </label>
-
-        <label class="theme-card">
-          <input type="radio" name="theme" value="modern-light">
-          <div class="theme-preview modern-light">
-            <div class="bar-sample"></div>
+          <div class="accordion-header-right">
+            <span class="accordion-summary" id="sumTiming">8px • 450ms</span>
+            <svg class="accordion-chevron" viewBox="0 0 24 24">
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+            </svg>
           </div>
-          <span class="theme-name">Light</span>
-        </label>
-
-        <label class="theme-card">
-          <input type="radio" name="theme" value="amoled">
-          <div class="theme-preview amoled">
-            <div class="bar-sample"></div>
+        </button>
+        <div class="accordion-collapse">
+          <div class="accordion-body">
+            <div class="setting-item">
+              <div class="setting-label-row">
+                <span>Trigger Proximity</span>
+                <span class="val-badge" id="valTrigger">8px</span>
+              </div>
+              <input type="range" id="triggerHeight" min="2" max="25" value="8" class="range-slider">
+              <span class="setting-hint">Hover distance from edge to reveal</span>
+            </div>
+            <div class="setting-item">
+              <div class="setting-label-row">
+                <span>Auto-Hide Delay</span>
+                <span class="val-badge" id="valDelay">450ms</span>
+              </div>
+              <input type="range" id="hideDelay" min="100" max="1500" step="50" value="450" class="range-slider">
+              <span class="setting-hint">Delay before hiding after mouse leaves</span>
+            </div>
           </div>
-          <span class="theme-name">AMOLED</span>
-        </label>
-
-        <label class="theme-card">
-          <input type="radio" name="theme" value="chrome">
-          <div class="theme-preview chrome">
-            <div class="bar-sample"></div>
-          </div>
-          <span class="theme-name">Classic</span>
-        </label>
-      </div>
-
-      <div class="setting-row">
-        <span class="setting-text">Screen Edge Position</span>
-        <div class="segmented-control">
-          <button type="button" class="segment-btn active" data-pos="top">Top</button>
-          <button type="button" class="segment-btn" data-pos="bottom">Bottom</button>
         </div>
       </div>
-    </div>
 
-    <!-- Preferences -->
-    <div class="settings-group">
-      <h2 class="section-title">Behavior</h2>
-
-      <div class="setting-row">
-        <span class="setting-text">Open in New Tab</span>
-        <label class="switch-toggle small">
-          <input type="checkbox" id="openInNewTab">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="setting-row">
-        <span class="setting-text">Show Website Favicons</span>
-        <label class="switch-toggle small">
-          <input type="checkbox" id="showFavicons" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="setting-row">
-        <span class="setting-text">Show Bookmark URL on Hover</span>
-        <label class="switch-toggle small" title="Show destination URL when hovering over bookmarks">
-          <input type="checkbox" id="showBookmarkUrl">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Sinary Developer Attribution Card -->
-    <div class="sinary-dev-card">
-      <img src="icons/sinary-icon.png" class="sinary-card-logo" alt="Sinary">
-      <div class="sinary-card-content">
-        <span class="sinary-card-title">Crafted by <strong>sinary.org</strong> developers</span>
-        <span class="sinary-card-desc">Free on GitHub & Microsoft Edge Store</span>
-      </div>
-      <a href="https://sinary.org" target="_blank" class="sinary-visit-btn" title="Explore sinary.org">Visit ↗</a>
-    </div>
-
-    <!-- GitHub Version & Update Card -->
-    <div class="version-card">
-      <div class="version-card-left">
-        <svg class="github-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-          <path
-            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-        </svg>
-        <div class="version-meta">
-          <div class="version-heading">
-            <span class="version-title">GitHub Release</span>
-            <span class="version-pill" id="currentVersionPill"></span>
+      <!-- 2. Appearance & Position -->
+      <div class="accordion-item" id="accAppearance">
+        <button type="button" class="accordion-header" id="accHeaderAppearance">
+          <div class="accordion-header-left">
+            <svg class="accordion-icon" viewBox="0 0 24 24">
+              <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.59 10.56 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+            </svg>
+            <span class="accordion-title">Appearance & Position</span>
           </div>
-          <span class="version-status" id="versionStatusText">Checking GitHub for updates...</span>
+          <div class="accordion-header-right">
+            <span class="accordion-summary" id="sumAppearance">Dark Glass • Top</span>
+            <svg class="accordion-chevron" viewBox="0 0 24 24">
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+            </svg>
+          </div>
+        </button>
+        <div class="accordion-collapse">
+          <div class="accordion-body">
+            <div class="theme-grid">
+              <label class="theme-card">
+                <input type="radio" name="theme" value="dark-glass" checked>
+                <div class="theme-preview dark-glass">
+                  <div class="bar-sample"></div>
+                </div>
+                <span class="theme-name">Dark Glass</span>
+              </label>
+
+              <label class="theme-card">
+                <input type="radio" name="theme" value="modern-light">
+                <div class="theme-preview modern-light">
+                  <div class="bar-sample"></div>
+                </div>
+                <span class="theme-name">Light</span>
+              </label>
+
+              <label class="theme-card">
+                <input type="radio" name="theme" value="amoled">
+                <div class="theme-preview amoled">
+                  <div class="bar-sample"></div>
+                </div>
+                <span class="theme-name">AMOLED</span>
+              </label>
+
+              <label class="theme-card">
+                <input type="radio" name="theme" value="chrome">
+                <div class="theme-preview chrome">
+                  <div class="bar-sample"></div>
+                </div>
+                <span class="theme-name">Classic</span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-text">Screen Edge Position</span>
+              <div class="segmented-control">
+                <button type="button" class="segment-btn active" data-pos="top">Top</button>
+                <button type="button" class="segment-btn" data-pos="bottom">Bottom</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <a href="https://github.com/sinaryorg/chrome-autobookmark-extension/releases" target="_blank"
-        class="version-action-btn" id="versionActionBtn" title="View GitHub Releases">
-        Releases ↗
-      </a>
+
+      <!-- 3. Behavior Preferences -->
+      <div class="accordion-item" id="accBehavior">
+        <button type="button" class="accordion-header" id="accHeaderBehavior">
+          <div class="accordion-header-left">
+            <svg class="accordion-icon" viewBox="0 0 24 24">
+              <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+            </svg>
+            <span class="accordion-title">Behavior Preferences</span>
+          </div>
+          <div class="accordion-header-right">
+            <span class="accordion-summary" id="sumBehavior">Favicons</span>
+            <svg class="accordion-chevron" viewBox="0 0 24 24">
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+            </svg>
+          </div>
+        </button>
+        <div class="accordion-collapse">
+          <div class="accordion-body">
+            <div class="setting-row">
+              <span class="setting-text">Open in New Tab</span>
+              <label class="switch-toggle small">
+                <input type="checkbox" id="openInNewTab">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-text">Show Website Favicons</span>
+              <label class="switch-toggle small">
+                <input type="checkbox" id="showFavicons" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-text">Show Bookmark URL on Hover</span>
+              <label class="switch-toggle small" title="Show destination URL when hovering over bookmarks">
+                <input type="checkbox" id="showBookmarkUrl">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. About & Updates -->
+      <div class="accordion-item" id="accAbout">
+        <button type="button" class="accordion-header" id="accHeaderAbout">
+          <div class="accordion-header-left">
+            <svg class="accordion-icon" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            <span class="accordion-title">About & Updates</span>
+          </div>
+          <div class="accordion-header-right">
+            <span class="accordion-summary" id="sumAbout">v1.1.0</span>
+            <svg class="accordion-chevron" viewBox="0 0 24 24">
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+            </svg>
+          </div>
+        </button>
+        <div class="accordion-collapse">
+          <div class="accordion-body">
+            <!-- GitHub Version & Update Card -->
+            <div class="version-card">
+              <div class="version-card-left">
+                <svg class="github-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path
+                    d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+                <div class="version-meta">
+                  <div class="version-heading">
+                    <span class="version-title">GitHub Release</span>
+                    <span class="version-pill" id="currentVersionPill"></span>
+                  </div>
+                  <span class="version-status" id="versionStatusText">Checking GitHub for updates...</span>
+                </div>
+              </div>
+              <a href="https://github.com/sinaryorg/chrome-autobookmark-extension/releases" target="_blank"
+                class="version-action-btn" id="versionActionBtn" title="View GitHub Releases">
+                Releases ↗
+              </a>
+            </div>
+
+            <!-- Sinary Developer Attribution Card -->
+            <div class="sinary-dev-card" style="margin-top: 10px;">
+              <img src="icons/sinary-icon.png" class="sinary-card-logo" alt="Sinary">
+              <div class="sinary-card-content">
+                <span class="sinary-card-title">Crafted by <strong>sinary.org</strong></span>
+                <span class="sinary-card-desc">Free on GitHub & Microsoft Edge Store</span>
+              </div>
+              <a href="https://sinary.org" target="_blank" class="sinary-visit-btn" title="Explore sinary.org">Visit ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Footer -->

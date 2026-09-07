@@ -125,6 +125,16 @@
   const searchResultsModal = document.createElement('div');
   searchResultsModal.className = 'ab-search-results-modal';
 
+  searchResultsModal.addEventListener('mouseenter', () => {
+    isMouseInsideDropdown = true;
+    clearTimeout(hideTimer);
+  });
+
+  searchResultsModal.addEventListener('mouseleave', () => {
+    isMouseInsideDropdown = false;
+    scheduleHide();
+  });
+
   searchContainer.appendChild(searchIconBtn);
   searchContainer.appendChild(searchInput);
   searchContainer.appendChild(searchResultsModal);
@@ -336,33 +346,47 @@
       dropdownPortal.classList.remove('ab-portal-bottom');
     }
 
+    // Seamless connecting concave fillet wings
+    const wingLeft = document.createElement('div');
+    wingLeft.className = 'ab-portal-wing ab-wing-left';
+    const wingRight = document.createElement('div');
+    wingRight.className = 'ab-portal-wing ab-wing-right';
+    dropdownPortal.appendChild(wingLeft);
+    dropdownPortal.appendChild(wingRight);
+
+    // Scrollable container for bookmark items
+    const scrollContainer = document.createElement('div');
+    scrollContainer.className = 'ab-portal-scroll';
+    dropdownPortal.appendChild(scrollContainer);
+
     if (!folder.children || folder.children.length === 0) {
       const emptyMsg = document.createElement('div');
       emptyMsg.className = 'ab-empty-msg';
       emptyMsg.textContent = 'Folder is empty';
-      dropdownPortal.appendChild(emptyMsg);
+      scrollContainer.appendChild(emptyMsg);
     } else {
       folder.children.forEach(child => {
         const childNode = createDropdownNode(child);
-        if (childNode) dropdownPortal.appendChild(childNode);
+        if (childNode) scrollContainer.appendChild(childNode);
       });
     }
 
-    // Position portal directly relative to folder chip
+    // Position portal flush with the bar (0px gap for seamless connection)
     const rect = folderElement.getBoundingClientRect();
+    const barRect = bar.getBoundingClientRect();
     const isBottom = settings.barPosition === 'bottom';
 
     if (isBottom) {
       dropdownPortal.style.top = 'auto';
-      dropdownPortal.style.bottom = `${window.innerHeight - rect.top + 3}px`;
+      dropdownPortal.style.bottom = `${window.innerHeight - barRect.top}px`;
     } else {
-      dropdownPortal.style.top = `${rect.bottom + 3}px`;
+      dropdownPortal.style.top = `${barRect.bottom}px`;
       dropdownPortal.style.bottom = 'auto';
     }
 
-    // Clamp left so dropdown stays fully on screen
-    const maxLeft = Math.max(8, window.innerWidth - 340);
-    const clampedLeft = Math.max(8, Math.min(rect.left, maxLeft));
+    // Clamp left so dropdown and wings stay fully on screen
+    const maxLeft = Math.max(16, window.innerWidth - 356);
+    const clampedLeft = Math.max(16, Math.min(rect.left, maxLeft));
     dropdownPortal.style.left = `${clampedLeft}px`;
 
     clearTimeout(hideTimer);
@@ -681,74 +705,118 @@
   function openSearch() {
     searchContainer.classList.add('ab-search-open');
     searchInput.focus();
+    clearTimeout(hideTimer);
   }
 
   function closeSearch() {
     searchContainer.classList.remove('ab-search-open');
     searchResultsModal.classList.remove('ab-show');
+    searchResultsModal.innerHTML = '';
     searchInput.value = '';
+    scheduleHide();
   }
 
   searchIconBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (searchContainer.classList.contains('ab-search-open')) {
-      if (searchInput.value.trim().length > 0) {
-        closeSearch();
-      } else {
-        closeSearch();
-      }
+      closeSearch();
     } else {
       openSearch();
     }
   });
 
+  searchInput.addEventListener('focus', () => {
+    clearTimeout(hideTimer);
+  });
+
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeSearch();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (searchContainer.classList.contains('ab-search-open')) {
+      const path = e.composedPath ? e.composedPath() : [];
+      if (!path.includes(searchContainer)) {
+        closeSearch();
+      }
+    }
+  }, true);
+
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim().toLowerCase();
     if (!q) {
       searchResultsModal.classList.remove('ab-show');
+      searchResultsModal.innerHTML = '';
       return;
     }
 
     try {
       chrome.runtime.sendMessage({ type: 'SEARCH_BOOKMARKS', query: q }, (res) => {
         if (chrome.runtime.lastError) return;
-        if (!res || !res.results || res.results.length === 0) {
-          searchResultsModal.innerHTML = '<div class="ab-empty-msg">No bookmarks found</div>';
-          searchResultsModal.classList.add('ab-show');
-          return;
-        }
 
         searchResultsModal.innerHTML = '';
-        res.results.forEach(item => {
-          const a = document.createElement('a');
-          a.className = 'ab-dropdown-item';
-          a.href = item.url;
-          if (shouldShowBookmarkUrl()) {
-            a.title = formatBookmarkTooltip(item.title, item.url);
-          }
 
-          const img = document.createElement('img');
-          img.className = 'ab-favicon';
-          setupFavicon(img, item.url);
-          a.appendChild(img);
+        // Seamless connecting concave fillet wings
+        const wingLeft = document.createElement('div');
+        wingLeft.className = 'ab-search-wing ab-wing-left';
+        const wingRight = document.createElement('div');
+        wingRight.className = 'ab-search-wing ab-wing-right';
+        searchResultsModal.appendChild(wingLeft);
+        searchResultsModal.appendChild(wingRight);
 
-          const span = document.createElement('span');
-          span.className = 'ab-title';
-          span.textContent = item.title || item.url;
-          a.appendChild(span);
+        // Scrollable container for search items
+        const scrollContainer = document.createElement('div');
+        scrollContainer.className = 'ab-search-scroll';
+        searchResultsModal.appendChild(scrollContainer);
 
-          a.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (settings.openInNewTab || e.ctrlKey || e.metaKey) {
-              window.open(item.url, '_blank');
-            } else {
-              window.location.href = item.url;
+        if (!res || !res.results || res.results.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.className = 'ab-empty-msg';
+          emptyMsg.textContent = 'No bookmarks found';
+          scrollContainer.appendChild(emptyMsg);
+        } else {
+          res.results.forEach(item => {
+            const a = document.createElement('a');
+            a.className = 'ab-dropdown-item';
+            a.href = item.url;
+            if (shouldShowBookmarkUrl()) {
+              a.title = formatBookmarkTooltip(item.title, item.url);
             }
-            closeSearch();
-          });
 
-          searchResultsModal.appendChild(a);
-        });
+            const img = document.createElement('img');
+            img.className = 'ab-favicon';
+            setupFavicon(img, item.url);
+            a.appendChild(img);
+
+            const span = document.createElement('span');
+            span.className = 'ab-title';
+            span.textContent = item.title || item.url;
+            a.appendChild(span);
+
+            a.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (settings.openInNewTab || e.ctrlKey || e.metaKey || e.button === 1) {
+                window.open(item.url, '_blank');
+              } else {
+                window.location.href = item.url;
+              }
+              closeSearch();
+            });
+
+            a.addEventListener('auxclick', (e) => {
+              if (e.button === 1 && item.url) {
+                e.preventDefault();
+                window.open(item.url, '_blank');
+                closeSearch();
+              }
+            });
+
+            scrollContainer.appendChild(a);
+          });
+        }
+
         searchResultsModal.classList.add('ab-show');
       });
     } catch (err) {}
