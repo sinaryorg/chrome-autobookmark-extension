@@ -153,6 +153,19 @@
   searchContainer.appendChild(searchResultsModal);
   rightActions.appendChild(searchContainer);
 
+  // Close open dropdowns when mouse enters non-folder bar controls
+  leftActions.addEventListener('mouseenter', () => {
+    if (activeFolderItem) {
+      closeAllDropdowns();
+    }
+  });
+
+  searchContainer.addEventListener('mouseenter', () => {
+    if (activeFolderItem) {
+      closeAllDropdowns();
+    }
+  });
+
   // Assemble bar
   bar.appendChild(leftActions);
   bar.appendChild(itemsWrapper);
@@ -173,7 +186,11 @@
       return;
     }
     isMouseInsideDropdown = false;
-    scheduleHide();
+    if (isPinned) {
+      closeAllDropdowns();
+    } else {
+      scheduleHide();
+    }
   });
 
   // Custom Context Menu attached to shadow root
@@ -956,6 +973,14 @@
     titleSpan.textContent = item.title || 'Untitled';
     a.appendChild(titleSpan);
 
+    a.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimer);
+      if (isDraggingBookmark) return;
+      if (activeFolderItem) {
+        closeAllDropdowns();
+      }
+    });
+
     a.addEventListener('dragstart', (e) => {
       isDraggingBookmark = true;
       draggedItemData = {
@@ -1301,6 +1326,10 @@
         }
       });
 
+      a.addEventListener('mouseenter', () => {
+        closeSubmenusFromLevel(level);
+      });
+
       a.addEventListener('contextmenu', (e) => {
         handleContextMenu(e, {
           id: child.id,
@@ -1532,8 +1561,13 @@
       }
     });
 
-    div.addEventListener('mouseleave', () => {
+    div.addEventListener('mouseleave', (e) => {
       clearTimeout(folderHoverTimer);
+      if (isPinned && activeFolderItem === div) {
+        if (e.relatedTarget && (e.relatedTarget === dropdownPortal || dropdownPortal.contains(e.relatedTarget))) {
+          return;
+        }
+      }
       scheduleHide();
     });
 
