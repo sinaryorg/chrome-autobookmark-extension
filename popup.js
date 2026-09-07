@@ -117,11 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const shouldShowUrl = s.showBookmarkUrl !== undefined ? !!s.showBookmarkUrl : (s.hideTooltips === false);
     if (showBookmarkUrl) showBookmarkUrl.checked = shouldShowUrl;
 
-    // Theme radio
+    // Theme radio & apply to popup UI
+    applyPopupTheme(s.theme || 'dark-glass');
     const themeRadio = document.querySelector(`input[name="theme"][value="${s.theme || 'dark-glass'}"]`);
     if (themeRadio) themeRadio.checked = true;
 
-    // Position
+    // Position (Only applies to floating bar on web pages; does not change popup position)
     segmentBtns.forEach(btn => {
       if (btn.dataset.pos === (s.barPosition || 'top')) {
         btn.classList.add('active');
@@ -129,6 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.classList.remove('active');
       }
     });
+  }
+
+  // Apply Theme directly to the popup window
+  function applyPopupTheme(themeName) {
+    const validThemes = ['dark-glass', 'modern-light', 'amoled', 'chrome'];
+    const theme = validThemes.includes(themeName) ? themeName : 'dark-glass';
+    document.body.classList.remove('theme-dark-glass', 'theme-modern-light', 'theme-amoled', 'theme-chrome');
+    document.body.classList.add(`theme-${theme}`);
   }
 
   function updateStatus(enabled) {
@@ -160,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     updateStatus(currentSettings.enabled);
+    applyPopupTheme(theme);
 
     // Save directly to storage
     chrome.storage.sync.set({ settings: currentSettings }, () => {
@@ -187,7 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (showBookmarkUrl) showBookmarkUrl.addEventListener('change', save);
 
   document.querySelectorAll('input[name="theme"]').forEach(radio => {
-    radio.addEventListener('change', save);
+    radio.addEventListener('change', () => {
+      applyPopupTheme(radio.value);
+      save();
+    });
   });
 
   segmentBtns.forEach(btn => {
@@ -217,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resetDefaultsBtn.addEventListener('click', () => {
     currentSettings = Object.assign({}, DEFAULT_SETTINGS);
     renderSettings(currentSettings);
+    applyPopupTheme(currentSettings.theme);
     save();
   });
 

@@ -16,6 +16,95 @@
   --radius-md: 10px;
   --radius-lg: 14px;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --slider-bg: #334155;
+  --control-bg: #0f172a;
+  --badge-bg: rgba(255, 255, 255, 0.08);
+  --badge-border: rgba(255, 255, 255, 0.15);
+  --badge-color: #38bdf8;
+}
+
+/* 1. Dark Glass Theme */
+body.theme-dark-glass {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+  --accent: #38bdf8;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: rgba(255, 255, 255, 0.09);
+  --border-focus: #38bdf8;
+  --slider-bg: #334155;
+  --control-bg: #0f172a;
+  --badge-bg: rgba(255, 255, 255, 0.08);
+  --badge-border: rgba(255, 255, 255, 0.15);
+  --badge-color: #38bdf8;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 2. Modern Light Theme */
+body.theme-modern-light {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f5f9;
+  --accent: #0284c7;
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 0, 0, 0.09);
+  --border-focus: #0284c7;
+  --slider-bg: #cbd5e1;
+  --control-bg: #f1f5f9;
+  --badge-bg: rgba(2, 132, 199, 0.08);
+  --badge-border: rgba(2, 132, 199, 0.2);
+  --badge-color: #0284c7;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 3. AMOLED Black Theme */
+body.theme-amoled {
+  --bg-primary: #000000;
+  --bg-secondary: #09090b;
+  --bg-card: #09090b;
+  --bg-hover: #18181b;
+  --accent: #38bdf8;
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --border-color: #27272a;
+  --border-focus: #38bdf8;
+  --slider-bg: #27272a;
+  --control-bg: #000000;
+  --badge-bg: rgba(255, 255, 255, 0.06);
+  --badge-border: #27272a;
+  --badge-color: #38bdf8;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+}
+
+/* 4. Chrome Classic Theme */
+body.theme-chrome {
+  --bg-primary: #202124;
+  --bg-secondary: #292a2d;
+  --bg-card: #292a2d;
+  --bg-hover: #35363a;
+  --accent: #8ab4f8;
+  --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #8ab4f8 100%);
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-muted: #80868b;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-focus: #8ab4f8;
+  --slider-bg: #3c4043;
+  --control-bg: #202124;
+  --badge-bg: rgba(138, 180, 248, 0.1);
+  --badge-border: rgba(138, 180, 248, 0.25);
+  --badge-color: #8ab4f8;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -35,6 +124,7 @@ body {
   overflow-x: hidden;
   font-size: 13px;
   line-height: 1.4;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .popup-container {
@@ -123,7 +213,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #334155;
+  background-color: var(--slider-bg, #334155);
   transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 24px;
 }
@@ -169,6 +259,8 @@ input:checked + .slider::before {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .shortcut-info {
@@ -185,12 +277,13 @@ input:checked + .slider::before {
 .key-badge {
   font-family: monospace;
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
   padding: 2px 6px;
   border-radius: 4px;
-  color: #38bdf8;
+  color: var(--badge-color);
   font-weight: 600;
+  transition: all 0.25s ease;
 }
 
 .btn-secondary {
@@ -198,7 +291,7 @@ input:checked + .slider::before {
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--badge-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -206,8 +299,8 @@ input:checked + .slider::before {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
 }
 
 /* Search Section */
@@ -339,6 +432,8 @@ input:checked + .slider::before {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 12px 14px;
+  box-shadow: var(--shadow);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .section-title {
@@ -367,9 +462,10 @@ input:checked + .slider::before {
   font-size: 11px;
   font-weight: 600;
   color: var(--accent);
-  background: rgba(56, 189, 248, 0.1);
+  background: var(--badge-bg);
   padding: 1px 6px;
   border-radius: 4px;
+  transition: all 0.25s ease;
 }
 
 .setting-hint {
@@ -383,9 +479,10 @@ input:checked + .slider::before {
   width: 100%;
   height: 5px;
   border-radius: 3px;
-  background: #334155;
+  background: var(--slider-bg, #334155);
   outline: none;
   cursor: pointer;
+  transition: background 0.25s ease;
 }
 
 .range-slider::-webkit-slider-thumb {
@@ -492,11 +589,12 @@ input:checked + .slider::before {
 /* Segmented Control (Top / Bottom) */
 .segmented-control {
   display: flex;
-  background: #0f172a;
+  background: var(--control-bg, #0f172a);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 2px;
   gap: 2px;
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .segment-btn {
@@ -522,10 +620,11 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--badge-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 10px 12px;
+  transition: all 0.25s ease;
 }
 
 .sinary-card-logo {
@@ -636,3 +735,75 @@ input:checked + .slider::before {
 .btn-text:hover {
   color: var(--text-primary);
 }
+
+/* Modern Light mode specific refinements */
+body.theme-modern-light .theme-preview.modern-light {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.theme-modern-light .segment-btn.active {
+  background: #ffffff;
+  color: #0284c7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+body.theme-modern-light .search-box {
+  background: #ffffff;
+}
+
+body.theme-modern-light .search-box input {
+  color: #0f172a;
+}
+
+body.theme-modern-light .search-box input::placeholder {
+  color: #94a3b8;
+}
+
+body.theme-modern-light .search-results-list {
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+body.theme-modern-light .search-results-list::before {
+  background: #ffffff;
+}
+
+body.theme-modern-light .search-item {
+  color: #0f172a;
+}
+
+body.theme-modern-light .search-item:hover {
+  background: #f1f5f9;
+}
+
+body.theme-modern-light .sinary-visit-btn {
+  background: rgba(2, 132, 199, 0.1);
+  border-color: rgba(2, 132, 199, 0.25);
+  color: #0284c7;
+}
+
+body.theme-modern-light .sinary-visit-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+body.theme-modern-light .btn-text {
+  color: #64748b;
+}
+
+body.theme-modern-light .btn-text:hover {
+  color: #0f172a;
+}
+
+/* AMOLED mode specific refinements */
+body.theme-amoled .segment-btn.active {
+  background: #18181b;
+  color: #38bdf8;
+}
+
+/* Classic Chrome mode specific refinements */
+body.theme-chrome .segment-btn.active {
+  background: #35363a;
+  color: #8ab4f8;
+}
+
