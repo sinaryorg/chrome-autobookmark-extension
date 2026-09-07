@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const valDelay = document.getElementById('valDelay');
   const openInNewTab = document.getElementById('openInNewTab');
   const showFavicons = document.getElementById('showFavicons');
+  const hideTooltips = document.getElementById('hideTooltips');
   const pinToggleBtn = document.getElementById('pinToggleBtn');
   const segmentBtns = document.querySelectorAll('.segment-btn');
   const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     theme: 'dark-glass',
     openInNewTab: false,
     showFavicons: true,
+    hideTooltips: true,
     barPosition: 'top',
     pinned: false
   };
@@ -111,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     openInNewTab.checked = !!s.openInNewTab;
     showFavicons.checked = s.showFavicons !== false;
+    hideTooltips.checked = s.hideTooltips !== false;
 
     // Theme radio
     const themeRadio = document.querySelector(`input[name="theme"][value="${s.theme || 'dark-glass'}"]`);
@@ -149,7 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
       theme: theme,
       barPosition: barPosition,
       openInNewTab: openInNewTab.checked,
-      showFavicons: showFavicons.checked
+      showFavicons: showFavicons.checked,
+      hideTooltips: hideTooltips.checked
     };
 
     updateStatus(currentSettings.enabled);
@@ -177,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   openInNewTab.addEventListener('change', save);
   showFavicons.addEventListener('change', save);
+  hideTooltips.addEventListener('change', save);
 
   document.querySelectorAll('input[name="theme"]').forEach(radio => {
     radio.addEventListener('change', save);
@@ -241,7 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const a = document.createElement('a');
           a.className = 'search-item';
           a.href = item.url;
-          a.title = formatBookmarkTooltip(item.title, item.url);
+          if (!currentSettings.hideTooltips) {
+            a.title = formatBookmarkTooltip(item.title, item.url);
+          }
 
           const img = document.createElement('img');
           img.src = getFaviconUrl(item.url);

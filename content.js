@@ -12,6 +12,7 @@
     theme: 'dark-glass',
     openInNewTab: false,
     showFavicons: true,
+    hideTooltips: true,
     barPosition: 'top',
     pinned: false
   };
@@ -365,7 +366,9 @@
     const a = document.createElement('a');
     a.className = 'ab-item ab-bookmark';
     a.href = item.url || '#';
-    a.title = formatBookmarkTooltip(item.title, item.url);
+    if (!settings.hideTooltips) {
+      a.title = formatBookmarkTooltip(item.title, item.url);
+    }
 
     if (settings.showFavicons && item.url) {
       const img = document.createElement('img');
@@ -405,7 +408,9 @@
       const a = document.createElement('a');
       a.className = 'ab-dropdown-item';
       a.href = child.url;
-      a.title = formatBookmarkTooltip(child.title, child.url);
+      if (!settings.hideTooltips) {
+        a.title = formatBookmarkTooltip(child.title, child.url);
+      }
 
       if (settings.showFavicons) {
         const img = document.createElement('img');
@@ -709,7 +714,9 @@
           const a = document.createElement('a');
           a.className = 'ab-dropdown-item';
           a.href = item.url;
-          a.title = formatBookmarkTooltip(item.title, item.url);
+          if (!settings.hideTooltips) {
+            a.title = formatBookmarkTooltip(item.title, item.url);
+          }
 
           const img = document.createElement('img');
           img.className = 'ab-favicon';

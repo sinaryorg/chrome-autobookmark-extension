@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS = {
   theme: 'dark-glass',     // 'dark-glass' | 'modern-light' | 'amoled' | 'chrome'
   openInNewTab: false,     // Open bookmarks in new tab by default
   showFavicons: true,      // Show website favicons
+  hideTooltips: true,      // Hide hover URL tooltips by default
   barPosition: 'top',      // 'top' | 'bottom'
   fontSize: 'medium',      // 'small' | 'medium' | 'large'
   pinned: false            // Keep bar pinned open
