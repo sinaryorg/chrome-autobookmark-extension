@@ -168,20 +168,48 @@
   }
   mountHost();
 
-  // Helper: Favicon URL
-  function getFaviconUrl(url) {
-    if (!url) return '';
-    try {
-      // Manifest V3 Favicon API
-      const extId = chrome.runtime.id;
-      return `chrome-extension://${extId}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`;
-    } catch {
-      return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url)}&sz=32`;
-    }
-  }
-
   // Favicon fallback SVG
   const fallbackFaviconSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2394a3b8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`;
+
+  // Robust Cross-Browser Favicon Resolver (Edge, Chrome, Firefox, Opera)
+  function setupFavicon(img, url) {
+    if (!url) {
+      img.src = fallbackFaviconSvg;
+      return;
+    }
+
+    let domain = '';
+    try {
+      const parsed = new URL(url);
+      domain = parsed.hostname;
+    } catch (e) {}
+
+    const isChromeOnly = navigator.userAgent.includes('Chrome') &&
+                         !navigator.userAgent.includes('Edg') &&
+                         !navigator.userAgent.includes('OPR') &&
+                         !navigator.userAgent.includes('Firefox');
+
+    // Pure Chrome supports internal _favicon cache; Edge, Firefox & Opera use Google S2
+    if (isChromeOnly && chrome.runtime?.id) {
+      img.src = `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`;
+    } else if (domain) {
+      img.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`;
+    } else {
+      img.src = fallbackFaviconSvg;
+      return;
+    }
+
+    img.onerror = () => {
+      if (domain && !img.src.includes('google.com/s2/favicons')) {
+        img.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`;
+      } else if (domain && !img.src.includes('/favicon.ico')) {
+        img.src = `https://${domain}/favicon.ico`;
+      } else {
+        img.onerror = null;
+        img.src = fallbackFaviconSvg;
+      }
+    };
+  }
 
   // Show / Hide Functions
   function showBar() {
@@ -295,14 +323,7 @@
     if (settings.showFavicons && item.url) {
       const img = document.createElement('img');
       img.className = 'ab-favicon';
-      img.src = getFaviconUrl(item.url);
-      img.onerror = () => {
-        img.onerror = null;
-        img.src = `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(item.url)}&sz=32`;
-        img.onerror = () => {
-          img.src = fallbackFaviconSvg;
-        };
-      };
+      setupFavicon(img, item.url);
       a.appendChild(img);
     }
 
@@ -342,10 +363,7 @@
       if (settings.showFavicons) {
         const img = document.createElement('img');
         img.className = 'ab-favicon';
-        img.src = getFaviconUrl(child.url);
-        img.onerror = () => {
-          img.src = fallbackFaviconSvg;
-        };
+        setupFavicon(img, child.url);
         a.appendChild(img);
       }
 
@@ -648,8 +666,7 @@
 
           const img = document.createElement('img');
           img.className = 'ab-favicon';
-          img.src = getFaviconUrl(item.url);
-          img.onerror = () => { img.src = fallbackFaviconSvg; };
+          setupFavicon(img, item.url);
           a.appendChild(img);
 
           const span = document.createElement('span');
