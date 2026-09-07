@@ -20,9 +20,15 @@
 
   let bookmarksData = [];
   let otherBookmarksData = [];
+  let barFolderId = '1';
   let hideTimer = null;
   let isMouseInsideBar = false;
   let isMouseInsideDropdown = false;
+  let isDraggingBookmark = false;
+  let wasJustDragged = false;
+  let draggedItemData = null;
+  let folderHoverExpandTimer = null;
+  let currentHoveredFolderElem = null;
   let isBarVisible = false;
   let isPinned = false;
   let activeFolderItem = null;
@@ -96,6 +102,10 @@
 
   const itemsTrack = document.createElement('div');
   itemsTrack.className = 'ab-items-track';
+
+  const dropIndicator = document.createElement('div');
+  dropIndicator.className = 'ab-drop-indicator';
+  itemsTrack.appendChild(dropIndicator);
 
   itemsWrapper.appendChild(scrollLeftBtn);
   itemsWrapper.appendChild(itemsTrack);
@@ -290,10 +300,10 @@
   }
 
   function scheduleHide() {
-    if (isPinned || !isBarVisible) return;
+    if (isPinned || !isBarVisible || isDraggingBookmark) return;
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
-      if (!isMouseInsideBar && !isMouseInsideDropdown && !isPinned) {
+      if (!isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark) {
         closeAllDropdowns();
         closeSearch();
         isBarVisible = false;
@@ -313,8 +323,108 @@
     }
   }
 
-  // Dropdown Handling via Portal
+  // Helper: Find bookmark item by ID in local cached tree
+  function findBookmarkById(id) {
+    function search(list) {
+      for (const item of list) {
+        if (item.id === id) return item;
+        if (item.children) {
+          const res = search(item.children);
+          if (res) return res;
+        }
+      }
+      return null;
+    }
+    return search([...bookmarksData, ...otherBookmarksData]);
+  }
+
+  // Helper: Prevent cyclic drops (folder into itself or its descendants)
+  function isDescendantOrSelf(sourceId, targetId) {
+    if (!sourceId || !targetId) return false;
+    if (sourceId === targetId) return true;
+    const sourceObj = findBookmarkById(sourceId);
+    if (!sourceObj || !sourceObj.children) return false;
+
+    function checkContains(folder, id) {
+      if (!folder.children) return false;
+      for (const child of folder.children) {
+        if (child.id === id) return true;
+        if (child.children && checkContains(child, id)) return true;
+      }
+      return false;
+    }
+    return checkContains(sourceObj, targetId);
+  }
+
+  // Helper: Execute bookmark move via Service Worker
+  function moveBookmarkTo(id, parentId, index) {
+    if (!id) return;
+    const payload = { type: 'MOVE_BOOKMARK', id };
+    if (parentId !== undefined && parentId !== null) payload.parentId = parentId;
+    if (index !== undefined && index !== null) payload.index = index;
+
+    try {
+      chrome.runtime.sendMessage(payload, (res) => {
+        if (chrome.runtime.lastError) {
+          console.warn('Failed to move bookmark:', chrome.runtime.lastError);
+        }
+      });
+    } catch (err) {
+      console.warn('Move bookmark error:', err);
+    }
+  }
+
+  // Helper: Find vertical drop target position within a dropdown or submenu scroll container
+  function getDropPositionInContainer(container, clientY) {
+    const items = Array.from(container.querySelectorAll('.ab-dropdown-item:not(.ab-dragging)'));
+    if (items.length === 0) {
+      return { targetItem: null, insertBefore: true, targetIndex: 0 };
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const itemEl = items[i];
+      const rect = itemEl.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if (clientY < midY) {
+        return { targetItem: itemEl, insertBefore: true, targetIndex: i };
+      }
+    }
+
+    const last = items[items.length - 1];
+    return { targetItem: last, insertBefore: false, targetIndex: items.length };
+  }
+
+  // Dropdown & Submenu Handling via Portal
+  let openSubmenus = [];
+
+  function closeSubmenusFromLevel(level) {
+    for (let i = openSubmenus.length - 1; i >= 0; i--) {
+      const item = openSubmenus[i];
+      if (item.level >= level) {
+        if (item.closeTimer) clearTimeout(item.closeTimer);
+        if (item.folderElem) {
+          item.folderElem.classList.remove('ab-submenu-active');
+          const parent = item.folderElem.closest('.ab-dropdown-portal, .ab-submenu');
+          if (parent) parent.classList.remove('ab-has-submenu-right', 'ab-has-submenu-left');
+        }
+        if (item.submenuElem && item.submenuElem.parentNode) {
+          item.submenuElem.parentNode.removeChild(item.submenuElem);
+        }
+        openSubmenus.splice(i, 1);
+      }
+    }
+    if (openSubmenus.length === 0) {
+      dropdownPortal.classList.remove('ab-has-submenu-right', 'ab-has-submenu-left');
+    }
+  }
+
+  function closeAllSubmenus() {
+    closeSubmenusFromLevel(1);
+  }
+
   function closeAllDropdowns() {
+    closeAllSubmenus();
+    dropdownPortal.classList.remove('ab-has-submenu-right', 'ab-has-submenu-left');
     if (activeFolderItem) {
       activeFolderItem.classList.remove('ab-open');
       activeFolderItem = null;
@@ -329,6 +439,8 @@
       closeAllDropdowns();
       return;
     }
+
+    closeAllSubmenus();
 
     if (activeFolderItem) {
       activeFolderItem.classList.remove('ab-open');
@@ -357,7 +469,12 @@
     // Scrollable container for bookmark items
     const scrollContainer = document.createElement('div');
     scrollContainer.className = 'ab-portal-scroll';
+    scrollContainer.addEventListener('scroll', () => closeAllSubmenus(), { passive: true });
     dropdownPortal.appendChild(scrollContainer);
+
+    const dropdownDropIndicator = document.createElement('div');
+    dropdownDropIndicator.className = 'ab-dropdown-drop-indicator';
+    scrollContainer.appendChild(dropdownDropIndicator);
 
     if (!folder.children || folder.children.length === 0) {
       const emptyMsg = document.createElement('div');
@@ -366,10 +483,104 @@
       scrollContainer.appendChild(emptyMsg);
     } else {
       folder.children.forEach(child => {
-        const childNode = createDropdownNode(child);
+        const childNode = createDropdownNode(child, folder, 1);
         if (childNode) scrollContainer.appendChild(childNode);
       });
     }
+
+    // Drop target handlers for items inside folder dropdown
+    scrollContainer.addEventListener('dragover', (e) => {
+      if (!isDraggingBookmark || !draggedItemData) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearTimeout(hideTimer);
+      isMouseInsideDropdown = true;
+
+      // Check if hovering over a subfolder
+      const subfolderTarget = e.target.closest('.ab-dropdown-parent');
+      if (subfolderTarget && !subfolderTarget.classList.contains('ab-dragging')) {
+        const rect = subfolderTarget.getBoundingClientRect();
+        const relativeY = (e.clientY - rect.top) / rect.height;
+        if (relativeY > 0.25 && relativeY < 0.75) {
+          dropdownDropIndicator.classList.remove('ab-show');
+          const subfolderId = subfolderTarget.dataset.bookmarkId;
+          const subfolderObj = findBookmarkById(subfolderId);
+          if (subfolderId && !isDescendantOrSelf(draggedItemData.id, subfolderId)) {
+            setFolderDragHighlight(subfolderTarget, subfolderObj);
+          }
+          return;
+        }
+      }
+
+      clearFolderDragHighlights();
+
+      // Position drop indicator between items
+      const items = Array.from(scrollContainer.querySelectorAll('.ab-dropdown-item:not(.ab-dragging)'));
+      if (items.length === 0) return;
+
+      const { targetItem, insertBefore } = getDropPositionInContainer(scrollContainer, e.clientY);
+      if (targetItem) {
+        const topPos = insertBefore 
+          ? targetItem.offsetTop - 1 
+          : targetItem.offsetTop + targetItem.offsetHeight + 1;
+        dropdownDropIndicator.style.top = `${topPos}px`;
+        dropdownDropIndicator.classList.add('ab-show');
+      }
+    });
+
+    scrollContainer.addEventListener('dragleave', (e) => {
+      if (!scrollContainer.contains(e.relatedTarget)) {
+        dropdownDropIndicator.classList.remove('ab-show');
+        clearFolderDragHighlights();
+      }
+    });
+
+    scrollContainer.addEventListener('drop', (e) => {
+      if (!isDraggingBookmark || !draggedItemData) return;
+      e.preventDefault();
+      dropdownDropIndicator.classList.remove('ab-show');
+      clearFolderDragHighlights();
+
+      // Check if dropped directly on a subfolder item
+      const subfolderTarget = e.target.closest('.ab-dropdown-parent');
+      if (subfolderTarget && !subfolderTarget.classList.contains('ab-dragging')) {
+        const targetRect = subfolderTarget.getBoundingClientRect();
+        const relativeY = (e.clientY - targetRect.top) / targetRect.height;
+        if (relativeY > 0.25 && relativeY < 0.75) {
+          const targetFolderId = subfolderTarget.dataset.bookmarkId;
+          if (targetFolderId && !isDescendantOrSelf(draggedItemData.id, targetFolderId)) {
+            moveBookmarkTo(draggedItemData.id, targetFolderId, null);
+            return;
+          }
+        }
+      }
+
+      // Safety guard: cannot drop parent folder into itself
+      if (isDescendantOrSelf(draggedItemData.id, folder.id)) {
+        return;
+      }
+
+      // Dropped between items in this folder
+      const { targetItem, insertBefore, targetIndex } = getDropPositionInContainer(scrollContainer, e.clientY);
+      let finalIndex = targetIndex;
+      if (targetItem) {
+        const targetId = targetItem.dataset.bookmarkId;
+        const targetObj = (folder.children || []).find(b => b.id === targetId);
+        if (targetObj) {
+          finalIndex = insertBefore ? targetObj.index : targetObj.index + 1;
+        } else if (!insertBefore) {
+          finalIndex = (folder.children || []).length;
+        }
+      } else {
+        finalIndex = (folder.children || []).length;
+      }
+
+      if (folder.children && finalIndex > folder.children.length) {
+        finalIndex = folder.children.length;
+      }
+
+      moveBookmarkTo(draggedItemData.id, folder.id, finalIndex);
+    });
 
     // Position portal flush with the bar (0px gap for seamless connection)
     const rect = folderElement.getBoundingClientRect();
@@ -399,6 +610,10 @@
     const a = document.createElement('a');
     a.className = 'ab-item ab-bookmark';
     a.href = item.url || '#';
+    a.draggable = true;
+    a.dataset.bookmarkId = item.id;
+    a.dataset.parentId = item.parentId || barFolderId;
+
     if (shouldShowBookmarkUrl()) {
       a.title = formatBookmarkTooltip(item.title, item.url);
     }
@@ -415,9 +630,37 @@
     titleSpan.textContent = item.title || 'Untitled';
     a.appendChild(titleSpan);
 
+    a.addEventListener('dragstart', (e) => {
+      isDraggingBookmark = true;
+      draggedItemData = {
+        id: item.id,
+        parentId: item.parentId || barFolderId,
+        index: item.index,
+        isFolder: false,
+        title: item.title || ''
+      };
+      a.classList.add('ab-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.title || item.url || '');
+      e.dataTransfer.setData('application/x-autobookmark-id', item.id);
+      clearTimeout(hideTimer);
+      showBar();
+    });
+
+    a.addEventListener('dragend', () => {
+      isDraggingBookmark = false;
+      draggedItemData = null;
+      wasJustDragged = true;
+      setTimeout(() => { wasJustDragged = false; }, 150);
+      a.classList.remove('ab-dragging');
+      hideDropIndicator();
+      clearFolderDragHighlights();
+      scheduleHide();
+    });
+
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!item.url) return;
+      if (wasJustDragged || !item.url) return;
       if (settings.openInNewTab || e.ctrlKey || e.metaKey || e.button === 1) {
         window.open(item.url, '_blank');
       } else {
@@ -426,7 +669,7 @@
     });
 
     a.addEventListener('auxclick', (e) => {
-      if (e.button === 1 && item.url) {
+      if (e.button === 1 && item.url && !wasJustDragged) {
         e.preventDefault();
         window.open(item.url, '_blank');
       }
@@ -435,12 +678,226 @@
     return a;
   }
 
+  // Open Submenu as Unclipped Portal attached to Shadow Root with Seamless Connection
+  function openSubmenu(folderDiv, childFolder, level) {
+    if (isDraggingBookmark) return;
+
+    // If already open for this exact folder item, do nothing
+    const existing = openSubmenus.find(s => s.level === level && s.folderElem === folderDiv);
+    if (existing) return;
+
+    // Close any sibling submenus at this level or deeper
+    closeSubmenusFromLevel(level);
+
+    folderDiv.classList.add('ab-submenu-active');
+
+    const parentContainer = folderDiv.closest('.ab-dropdown-portal, .ab-submenu');
+    const parentRect = parentContainer ? parentContainer.getBoundingClientRect() : folderDiv.getBoundingClientRect();
+    const folderRect = folderDiv.getBoundingClientRect();
+
+    const submenu = document.createElement('div');
+    submenu.className = `ab-submenu ab-theme-${settings.theme || 'dark-glass'} ab-show`;
+    submenu.dataset.level = String(level);
+
+    const scrollContainer = document.createElement('div');
+    scrollContainer.className = 'ab-submenu-scroll';
+    submenu.appendChild(scrollContainer);
+
+    const subDropIndicator = document.createElement('div');
+    subDropIndicator.className = 'ab-dropdown-drop-indicator';
+    scrollContainer.appendChild(subDropIndicator);
+
+    if (!childFolder.children || childFolder.children.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'ab-empty-msg';
+      empty.textContent = 'Empty folder';
+      scrollContainer.appendChild(empty);
+    } else {
+      childFolder.children.forEach(subChild => {
+        const subNode = createDropdownNode(subChild, childFolder, level + 1);
+        if (subNode) scrollContainer.appendChild(subNode);
+      });
+    }
+
+    // Attach unclipped directly to shadow root
+    shadow.appendChild(submenu);
+
+    // Compute fixed screen coordinates flush with parent container border (0px gap)
+    const submenuWidth = 220;
+    const fitsRight = (parentRect.right + submenuWidth <= window.innerWidth);
+
+    if (fitsRight) {
+      submenu.style.left = `${Math.round(parentRect.right - 1)}px`;
+      submenu.style.right = 'auto';
+      submenu.classList.add('ab-flyout-right');
+      submenu.classList.remove('ab-flyout-left');
+      if (parentContainer) {
+        parentContainer.classList.add('ab-has-submenu-right');
+        parentContainer.classList.remove('ab-has-submenu-left');
+      }
+    } else {
+      submenu.style.left = 'auto';
+      submenu.style.right = `${Math.max(8, Math.round(window.innerWidth - parentRect.left + 1))}px`;
+      submenu.classList.add('ab-flyout-left');
+      submenu.classList.remove('ab-flyout-right');
+      if (parentContainer) {
+        parentContainer.classList.add('ab-has-submenu-left');
+        parentContainer.classList.remove('ab-has-submenu-right');
+      }
+    }
+
+    const subHeight = submenu.offsetHeight || 180;
+    let topPos = folderRect.top - 6;
+    if (topPos + subHeight > window.innerHeight - 10) {
+      topPos = Math.max(10, window.innerHeight - subHeight - 10);
+    }
+    if (topPos < 10) {
+      topPos = 10;
+    }
+    submenu.style.top = `${Math.max(10, Math.round(topPos))}px`;
+
+    // Seamless Connecting Top Concave Fillet Wing
+    if (fitsRight) {
+      if (topPos > parentRect.top + 6) {
+        const wingTop = document.createElement('div');
+        wingTop.className = 'ab-submenu-wing ab-submenu-wing-top-right';
+        submenu.appendChild(wingTop);
+      }
+    } else {
+      if (topPos > parentRect.top + 6) {
+        const wingTop = document.createElement('div');
+        wingTop.className = 'ab-submenu-wing ab-submenu-wing-top-left';
+        submenu.appendChild(wingTop);
+      }
+    }
+
+    const record = { level, folderElem: folderDiv, submenuElem: submenu, closeTimer: null };
+    openSubmenus.push(record);
+
+    scrollContainer.addEventListener('scroll', () => closeSubmenusFromLevel(level + 1), { passive: true });
+
+    submenu.addEventListener('mouseenter', () => {
+      isMouseInsideDropdown = true;
+      clearTimeout(hideTimer);
+      if (record.closeTimer) {
+        clearTimeout(record.closeTimer);
+        record.closeTimer = null;
+      }
+    });
+
+    submenu.addEventListener('mouseleave', (e) => {
+      const childRecord = openSubmenus.find(s => s.level === level + 1);
+      if (childRecord && childRecord.submenuElem.contains(e.relatedTarget)) {
+        return;
+      }
+      if (folderDiv.contains(e.relatedTarget)) {
+        return;
+      }
+      record.closeTimer = setTimeout(() => {
+        closeSubmenusFromLevel(level);
+      }, 220);
+    });
+
+    // Drop target handlers inside submenu
+    scrollContainer.addEventListener('dragover', (e) => {
+      if (!isDraggingBookmark || !draggedItemData) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearTimeout(hideTimer);
+      isMouseInsideDropdown = true;
+
+      const subfolderTarget = e.target.closest('.ab-dropdown-parent');
+      if (subfolderTarget && !subfolderTarget.classList.contains('ab-dragging')) {
+        const targetRect = subfolderTarget.getBoundingClientRect();
+        const relativeY = (e.clientY - targetRect.top) / targetRect.height;
+        if (relativeY > 0.25 && relativeY < 0.75) {
+          subDropIndicator.classList.remove('ab-show');
+          const subId = subfolderTarget.dataset.bookmarkId;
+          const subObj = findBookmarkById(subId);
+          if (subId && !isDescendantOrSelf(draggedItemData.id, subId)) {
+            setFolderDragHighlight(subfolderTarget, subObj);
+          }
+          return;
+        }
+      }
+
+      clearFolderDragHighlights();
+
+      const items = Array.from(scrollContainer.querySelectorAll('.ab-dropdown-item:not(.ab-dragging)'));
+      if (items.length === 0) return;
+
+      const { targetItem, insertBefore } = getDropPositionInContainer(scrollContainer, e.clientY);
+      if (targetItem) {
+        const topIndicatorPos = insertBefore 
+          ? targetItem.offsetTop - 1 
+          : targetItem.offsetTop + targetItem.offsetHeight + 1;
+        subDropIndicator.style.top = `${topIndicatorPos}px`;
+        subDropIndicator.classList.add('ab-show');
+      }
+    });
+
+    scrollContainer.addEventListener('dragleave', (e) => {
+      if (!scrollContainer.contains(e.relatedTarget)) {
+        subDropIndicator.classList.remove('ab-show');
+        clearFolderDragHighlights();
+      }
+    });
+
+    scrollContainer.addEventListener('drop', (e) => {
+      if (!isDraggingBookmark || !draggedItemData) return;
+      e.preventDefault();
+      subDropIndicator.classList.remove('ab-show');
+      clearFolderDragHighlights();
+
+      const subfolderTarget = e.target.closest('.ab-dropdown-parent');
+      if (subfolderTarget && !subfolderTarget.classList.contains('ab-dragging')) {
+        const targetRect = subfolderTarget.getBoundingClientRect();
+        const relativeY = (e.clientY - targetRect.top) / targetRect.height;
+        if (relativeY > 0.25 && relativeY < 0.75) {
+          const targetFolderId = subfolderTarget.dataset.bookmarkId;
+          if (targetFolderId && !isDescendantOrSelf(draggedItemData.id, targetFolderId)) {
+            moveBookmarkTo(draggedItemData.id, targetFolderId, null);
+            return;
+          }
+        }
+      }
+
+      if (isDescendantOrSelf(draggedItemData.id, childFolder.id)) {
+        return;
+      }
+
+      const { targetItem, insertBefore, targetIndex } = getDropPositionInContainer(scrollContainer, e.clientY);
+      let finalIndex = targetIndex;
+      if (targetItem) {
+        const targetId = targetItem.dataset.bookmarkId;
+        const targetObj = (childFolder.children || []).find(b => b.id === targetId);
+        if (targetObj) {
+          finalIndex = insertBefore ? targetObj.index : targetObj.index + 1;
+        } else if (!insertBefore) {
+          finalIndex = (childFolder.children || []).length;
+        }
+      } else {
+        finalIndex = (childFolder.children || []).length;
+      }
+
+      if (childFolder.children && finalIndex > childFolder.children.length) {
+        finalIndex = childFolder.children.length;
+      }
+
+      moveBookmarkTo(draggedItemData.id, childFolder.id, finalIndex);
+    });
+  }
+
   // Recursive Dropdown Item Creator
-  function createDropdownNode(child) {
+  function createDropdownNode(child, parentFolder, level = 1) {
     if (child.url) {
       const a = document.createElement('a');
       a.className = 'ab-dropdown-item';
       a.href = child.url;
+      a.draggable = true;
+      a.dataset.bookmarkId = child.id;
+      a.dataset.parentId = child.parentId || (parentFolder ? parentFolder.id : barFolderId);
+
       if (shouldShowBookmarkUrl()) {
         a.title = formatBookmarkTooltip(child.title, child.url);
       }
@@ -457,8 +914,41 @@
       span.textContent = child.title || 'Untitled';
       a.appendChild(span);
 
+      a.addEventListener('mouseenter', () => {
+        closeSubmenusFromLevel(level);
+      });
+
+      a.addEventListener('dragstart', (e) => {
+        isDraggingBookmark = true;
+        draggedItemData = {
+          id: child.id,
+          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId),
+          index: child.index,
+          isFolder: false,
+          title: child.title || ''
+        };
+        a.classList.add('ab-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', child.title || child.url || '');
+        e.dataTransfer.setData('application/x-autobookmark-id', child.id);
+        clearTimeout(hideTimer);
+        showBar();
+      });
+
+      a.addEventListener('dragend', () => {
+        isDraggingBookmark = false;
+        draggedItemData = null;
+        wasJustDragged = true;
+        setTimeout(() => { wasJustDragged = false; }, 150);
+        a.classList.remove('ab-dragging');
+        hideDropIndicator();
+        clearFolderDragHighlights();
+        scheduleHide();
+      });
+
       a.addEventListener('click', (e) => {
         e.preventDefault();
+        if (wasJustDragged || !child.url) return;
         closeAllDropdowns();
         if (settings.openInNewTab || e.ctrlKey || e.metaKey || e.button === 1) {
           window.open(child.url, '_blank');
@@ -468,7 +958,7 @@
       });
 
       a.addEventListener('auxclick', (e) => {
-        if (e.button === 1 && child.url) {
+        if (e.button === 1 && child.url && !wasJustDragged) {
           e.preventDefault();
           closeAllDropdowns();
           window.open(child.url, '_blank');
@@ -480,6 +970,12 @@
       // Subfolder
       const folderDiv = document.createElement('div');
       folderDiv.className = 'ab-dropdown-item ab-dropdown-parent';
+      folderDiv.draggable = true;
+      folderDiv.dataset.bookmarkId = child.id;
+      folderDiv.dataset.parentId = child.parentId || (parentFolder ? parentFolder.id : barFolderId);
+      folderDiv.tabIndex = 0;
+      folderDiv.setAttribute('role', 'button');
+      folderDiv.setAttribute('aria-haspopup', 'true');
 
       const folderIcon = document.createElement('span');
       folderIcon.className = 'ab-folder-icon';
@@ -496,41 +992,95 @@
       folderDiv.appendChild(span);
 
       const arrow = document.createElement('span');
+      arrow.className = 'ab-submenu-arrow';
       arrow.textContent = '›';
-      arrow.style.marginLeft = 'auto';
-      arrow.style.opacity = '0.7';
       folderDiv.appendChild(arrow);
 
-      // Submenu
-      const submenu = document.createElement('div');
-      submenu.className = 'ab-submenu';
-      if (child.children.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'ab-empty-msg';
-        empty.textContent = 'Empty folder';
-        submenu.appendChild(empty);
-      } else {
-        child.children.forEach(subChild => {
-          const subNode = createDropdownNode(subChild);
-          if (subNode) submenu.appendChild(subNode);
-        });
-      }
-      folderDiv.appendChild(submenu);
+      let subOpenTimer = null;
 
-      // Reposition submenu if near right edge
       folderDiv.addEventListener('mouseenter', () => {
-        const rect = folderDiv.getBoundingClientRect();
-        if (rect.right + 220 > window.innerWidth) {
-          submenu.style.left = 'auto';
-          submenu.style.right = '100%';
-          submenu.style.marginLeft = '0';
-          submenu.style.marginRight = '4px';
-        } else {
-          submenu.style.left = '100%';
-          submenu.style.right = 'auto';
-          submenu.style.marginLeft = '4px';
-          submenu.style.marginRight = '0';
+        if (isDraggingBookmark) return;
+        const record = openSubmenus.find(s => s.level === level && s.folderElem === folderDiv);
+        if (record && record.closeTimer) {
+          clearTimeout(record.closeTimer);
+          record.closeTimer = null;
         }
+
+        const activeAtThisLevel = openSubmenus.find(s => s.level === level);
+        if (activeAtThisLevel && activeAtThisLevel.folderElem !== folderDiv) {
+          openSubmenu(folderDiv, child, level);
+        } else if (!activeAtThisLevel) {
+          subOpenTimer = setTimeout(() => {
+            if (folderDiv.matches(':hover')) {
+              openSubmenu(folderDiv, child, level);
+            }
+          }, 180);
+        }
+      });
+
+      folderDiv.addEventListener('mouseleave', (e) => {
+        clearTimeout(subOpenTimer);
+        const record = openSubmenus.find(s => s.level === level && s.folderElem === folderDiv);
+        if (record) {
+          if (record.submenuElem.contains(e.relatedTarget)) {
+            return;
+          }
+          record.closeTimer = setTimeout(() => {
+            closeSubmenusFromLevel(level);
+          }, 220);
+        }
+      });
+
+      folderDiv.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (wasJustDragged) return;
+        const record = openSubmenus.find(s => s.level === level && s.folderElem === folderDiv);
+        if (record) {
+          closeSubmenusFromLevel(level);
+        } else {
+          openSubmenu(folderDiv, child, level);
+        }
+      });
+
+      folderDiv.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          e.stopPropagation();
+          openSubmenu(folderDiv, child, level);
+        } else if (e.key === 'Escape' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          e.stopPropagation();
+          closeSubmenusFromLevel(level);
+        }
+      });
+
+      folderDiv.addEventListener('dragstart', (e) => {
+        isDraggingBookmark = true;
+        draggedItemData = {
+          id: child.id,
+          parentId: child.parentId || (parentFolder ? parentFolder.id : barFolderId),
+          index: child.index,
+          isFolder: true,
+          title: child.title || ''
+        };
+        folderDiv.classList.add('ab-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', child.title || '');
+        e.dataTransfer.setData('application/x-autobookmark-id', child.id);
+        clearTimeout(hideTimer);
+        showBar();
+      });
+
+      folderDiv.addEventListener('dragend', () => {
+        isDraggingBookmark = false;
+        draggedItemData = null;
+        wasJustDragged = true;
+        setTimeout(() => { wasJustDragged = false; }, 150);
+        folderDiv.classList.remove('ab-dragging');
+        hideDropIndicator();
+        clearFolderDragHighlights();
+        scheduleHide();
       });
 
       return folderDiv;
@@ -545,6 +1095,9 @@
     div.tabIndex = 0;
     div.setAttribute('role', 'button');
     div.setAttribute('aria-haspopup', 'true');
+    div.draggable = true;
+    div.dataset.bookmarkId = folder.id;
+    div.dataset.parentId = folder.parentId || barFolderId;
     div.title = `${folder.title || 'Folder'} (${(folder.children || []).length} items)\nClick to open`;
 
     const folderIcon = document.createElement('span');
@@ -568,10 +1121,39 @@
 
     let folderHoverTimer = null;
 
+    div.addEventListener('dragstart', (e) => {
+      isDraggingBookmark = true;
+      draggedItemData = {
+        id: folder.id,
+        parentId: folder.parentId || barFolderId,
+        index: folder.index,
+        isFolder: true,
+        title: folder.title || ''
+      };
+      div.classList.add('ab-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', folder.title || '');
+      e.dataTransfer.setData('application/x-autobookmark-id', folder.id);
+      clearTimeout(hideTimer);
+      showBar();
+    });
+
+    div.addEventListener('dragend', () => {
+      isDraggingBookmark = false;
+      draggedItemData = null;
+      wasJustDragged = true;
+      setTimeout(() => { wasJustDragged = false; }, 150);
+      div.classList.remove('ab-dragging');
+      hideDropIndicator();
+      clearFolderDragHighlights();
+      scheduleHide();
+    });
+
     // Click on folder chip: toggles the folder dropdown
     div.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
+      if (wasJustDragged) return;
       clearTimeout(folderHoverTimer);
       if (activeFolderItem === div) {
         closeAllDropdowns();
@@ -583,6 +1165,7 @@
     // Hover over folder: if already browsing folders, switch instantly; otherwise dwell
     div.addEventListener('mouseenter', () => {
       clearTimeout(hideTimer);
+      if (isDraggingBookmark) return; // handled by dragover
       if (activeFolderItem && activeFolderItem !== div) {
         openFolderDropdown(folder, div);
       } else if (!activeFolderItem) {
@@ -596,7 +1179,9 @@
 
     div.addEventListener('mouseleave', () => {
       clearTimeout(folderHoverTimer);
-      scheduleHide();
+      if (!isDraggingBookmark) {
+        scheduleHide();
+      }
     });
 
     // Keyboard support: Enter, Space, Escape
@@ -619,8 +1204,14 @@
 
   // Render All Bookmarks
   function renderBookmarks() {
+    const previousOpenFolderId = (activeFolderItem && dropdownPortal.classList.contains('ab-show'))
+      ? activeFolderItem.dataset.bookmarkId
+      : null;
+    const previousSubmenuIds = openSubmenus.map(s => s.folderElem ? s.folderElem.dataset.bookmarkId : null).filter(Boolean);
+
     closeAllDropdowns();
     itemsTrack.innerHTML = '';
+    itemsTrack.appendChild(dropIndicator);
 
     const allItems = [...bookmarksData, ...otherBookmarksData];
 
@@ -640,6 +1231,25 @@
       }
     });
 
+    if (previousOpenFolderId) {
+      const newFolderEl = itemsTrack.querySelector(`.ab-item.ab-folder[data-bookmark-id="${previousOpenFolderId}"]`);
+      const newFolderObj = findBookmarkById(previousOpenFolderId);
+      if (newFolderEl && newFolderObj) {
+        openFolderDropdown(newFolderObj, newFolderEl);
+
+        // Restore open submenus if any
+        if (previousSubmenuIds.length > 0) {
+          previousSubmenuIds.forEach((subId, idx) => {
+            const subElem = shadowRoot.querySelector(`.ab-dropdown-parent[data-bookmark-id="${subId}"]`);
+            const subObj = findBookmarkById(subId);
+            if (subElem && subObj) {
+              openSubmenu(subObj, subElem, idx + 1);
+            }
+          });
+        }
+      }
+    }
+
     setTimeout(updateScrollArrows, 50);
   }
 
@@ -654,6 +1264,146 @@
     if (canScrollRight) scrollRightBtn.classList.add('ab-show');
     else scrollRightBtn.classList.remove('ab-show');
   }
+
+  // Drag & Drop Track Handlers
+  function hideDropIndicator() {
+    dropIndicator.classList.remove('ab-show');
+  }
+
+  function clearFolderDragHighlights() {
+    if (currentHoveredFolderElem) {
+      currentHoveredFolderElem.classList.remove('ab-drag-target-folder');
+      currentHoveredFolderElem = null;
+    }
+    clearTimeout(folderHoverExpandTimer);
+  }
+
+  function setFolderDragHighlight(folderElem, folderObj) {
+    if (currentHoveredFolderElem === folderElem) return;
+    clearFolderDragHighlights();
+    currentHoveredFolderElem = folderElem;
+    folderElem.classList.add('ab-drag-target-folder');
+
+    clearTimeout(folderHoverExpandTimer);
+    folderHoverExpandTimer = setTimeout(() => {
+      if (currentHoveredFolderElem === folderElem && isDraggingBookmark) {
+        if (folderObj && folderObj.children) {
+          openFolderDropdown(folderObj, folderElem);
+        }
+      }
+    }, 450);
+  }
+
+  function getDropPositionOnTrack(clientX) {
+    const items = Array.from(itemsTrack.querySelectorAll('.ab-item:not(.ab-dragging)'));
+    if (items.length === 0) {
+      return { targetItem: null, insertBefore: true, targetIndex: 0 };
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const itemEl = items[i];
+      const rect = itemEl.getBoundingClientRect();
+      const mid = rect.left + rect.width / 2;
+      if (clientX < mid) {
+        return { targetItem: itemEl, insertBefore: true, targetIndex: i };
+      }
+    }
+
+    const last = items[items.length - 1];
+    return { targetItem: last, insertBefore: false, targetIndex: items.length };
+  }
+
+  function handleTrackAutoScroll(clientX) {
+    const trackRect = itemsTrack.getBoundingClientRect();
+    const edgeDistance = 45;
+    if (clientX < trackRect.left + edgeDistance) {
+      itemsTrack.scrollLeft -= 8;
+    } else if (clientX > trackRect.right - edgeDistance) {
+      itemsTrack.scrollLeft += 8;
+    }
+  }
+
+  itemsTrack.addEventListener('dragover', (e) => {
+    if (!isDraggingBookmark || !draggedItemData) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearTimeout(hideTimer);
+
+    handleTrackAutoScroll(e.clientX);
+
+    // Check if hovering directly over a folder chip on the track
+    const folderTarget = e.target.closest('.ab-item.ab-folder');
+    if (folderTarget && !folderTarget.classList.contains('ab-dragging')) {
+      const rect = folderTarget.getBoundingClientRect();
+      const relativeX = (e.clientX - rect.left) / rect.width;
+      // If hovering near the middle 60% of folder chip (0.2 to 0.8), treat as drop-into-folder
+      if (relativeX > 0.2 && relativeX < 0.8) {
+        hideDropIndicator();
+        const folderId = folderTarget.dataset.bookmarkId;
+        const folderObj = findBookmarkById(folderId);
+        if (folderId && !isDescendantOrSelf(draggedItemData.id, folderId)) {
+          setFolderDragHighlight(folderTarget, folderObj);
+        }
+        return;
+      }
+    }
+
+    // Otherwise, position the drop indicator between items
+    clearFolderDragHighlights();
+    const { targetItem, insertBefore } = getDropPositionOnTrack(e.clientX);
+    if (targetItem) {
+      const leftPos = insertBefore 
+        ? targetItem.offsetLeft - 3 
+        : targetItem.offsetLeft + targetItem.offsetWidth + 1;
+      dropIndicator.style.left = `${leftPos}px`;
+      dropIndicator.classList.add('ab-show');
+    }
+  });
+
+  itemsTrack.addEventListener('dragleave', (e) => {
+    if (!itemsTrack.contains(e.relatedTarget)) {
+      hideDropIndicator();
+      clearFolderDragHighlights();
+    }
+  });
+
+  itemsTrack.addEventListener('drop', (e) => {
+    if (!isDraggingBookmark || !draggedItemData) return;
+    e.preventDefault();
+    hideDropIndicator();
+    clearFolderDragHighlights();
+
+    // Check if dropped directly onto a folder chip
+    const folderTarget = e.target.closest('.ab-item.ab-folder');
+    if (folderTarget && !folderTarget.classList.contains('ab-dragging')) {
+      const rect = folderTarget.getBoundingClientRect();
+      const relativeX = (e.clientX - rect.left) / rect.width;
+      if (relativeX > 0.2 && relativeX < 0.8) {
+        const targetFolderId = folderTarget.dataset.bookmarkId;
+        if (targetFolderId && !isDescendantOrSelf(draggedItemData.id, targetFolderId)) {
+          moveBookmarkTo(draggedItemData.id, targetFolderId, null);
+        }
+        return;
+      }
+    }
+
+    // Dropped between items on the main bar
+    const { targetItem, insertBefore, targetIndex } = getDropPositionOnTrack(e.clientX);
+    let newIndex = targetIndex;
+    if (targetItem) {
+      const targetId = targetItem.dataset.bookmarkId;
+      const targetObj = findBookmarkById(targetId);
+      if (targetObj) {
+        if (targetObj.parentId === barFolderId) {
+          newIndex = insertBefore ? targetObj.index : targetObj.index + 1;
+        } else {
+          newIndex = bookmarksData.length;
+        }
+      }
+    }
+
+    moveBookmarkTo(draggedItemData.id, barFolderId, newIndex);
+  });
 
   itemsTrack.addEventListener('scroll', () => {
     updateScrollArrows();
@@ -831,6 +1581,7 @@
   // Apply Settings
   function applySettings(newSettings) {
     settings = Object.assign({}, settings, newSettings);
+    closeAllSubmenus();
 
     // Apply Theme
     bar.className = `ab-bar ab-theme-${settings.theme || 'dark-glass'}`;
@@ -888,7 +1639,7 @@
 
     if (isAtTriggerEdge) {
       showBar();
-    } else if (isBarVisible && !isMouseInsideBar && !isMouseInsideDropdown && !isPinned) {
+    } else if (isBarVisible && !isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark) {
       // Check if mouse is beyond bar threshold (38px + buffer)
       const isPastBar = (settings.barPosition === 'bottom')
         ? (window.innerHeight - e.clientY > 50)
@@ -913,6 +1664,7 @@
         if (res && res.success) {
           bookmarksData = res.bookmarks || [];
           otherBookmarksData = res.otherBookmarks || [];
+          if (res.barFolderId) barFolderId = res.barFolderId;
           renderBookmarks();
         }
       });

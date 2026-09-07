@@ -83,9 +83,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (otherFolder && otherFolder.children && otherFolder.children.length > 0) {
           otherItems = [otherFolder];
         }
+        
+        sendResponse({ 
+          success: true, 
+          bookmarks: barItems, 
+          otherBookmarks: otherItems,
+          barFolderId: barFolder ? barFolder.id : '1'
+        });
+        return;
       }
 
-      sendResponse({ success: true, bookmarks: barItems, otherBookmarks: otherItems });
+      sendResponse({ success: true, bookmarks: [], otherBookmarks: [], barFolderId: '1' });
     }).catch(err => {
       console.error('Failed to get bookmarks tree:', err);
       sendResponse({ success: false, error: err.message });
@@ -120,6 +128,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }).catch(err => {
       sendResponse({ success: false, error: err.message });
     });
+    return true;
+  }
+
+  if (request.type === 'MOVE_BOOKMARK') {
+    const destination = {};
+    if (request.parentId !== undefined && request.parentId !== null) {
+      destination.parentId = String(request.parentId);
+    }
+    if (request.index !== undefined && request.index !== null) {
+      destination.index = parseInt(request.index, 10);
+    }
+
+    chrome.bookmarks.move(String(request.id), destination)
+      .then(result => {
+        sendResponse({ success: true, result });
+      })
+      .catch(err => {
+        console.error('Failed to move bookmark:', err);
+        sendResponse({ success: false, error: err.message });
+      });
     return true;
   }
 

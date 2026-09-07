@@ -288,6 +288,57 @@
   border-color: rgba(0, 0, 0, 0.04);
 }
 
+/* Drag and Drop States & Indicators */
+.ab-item.ab-dragging,
+.ab-dropdown-item.ab-dragging {
+  opacity: 0.35 !important;
+  transform: scale(0.96) !important;
+  border: 1px dashed rgba(56, 189, 248, 0.6) !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+  cursor: grabbing !important;
+}
+
+.ab-item.ab-folder.ab-drag-target-folder,
+.ab-dropdown-item.ab-folder.ab-drag-target-folder {
+  background: rgba(56, 189, 248, 0.22) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5), 0 0 12px rgba(56, 189, 248, 0.4) !important;
+  transform: scale(1.05);
+}
+
+.ab-drop-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 22px;
+  background: #38bdf8;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #38bdf8, 0 0 2px #fff;
+  pointer-events: none;
+  z-index: 100;
+  display: none;
+}
+.ab-drop-indicator.ab-show {
+  display: block;
+}
+
+.ab-dropdown-drop-indicator {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: #38bdf8;
+  border-radius: 1px;
+  box-shadow: 0 0 8px #38bdf8, 0 0 2px #fff;
+  pointer-events: none;
+  z-index: 100;
+  display: none;
+}
+.ab-dropdown-drop-indicator.ab-show {
+  display: block;
+}
+
 /* Favicons & Icons */
 .ab-favicon {
   width: 15px;
@@ -466,30 +517,131 @@
 }
 
 /* Submenu flyout */
+/* Submenu flyout - Seamless Connected Portal */
 .ab-submenu {
-  position: absolute;
-  top: -4px;
-  left: 100%;
-  margin-left: 4px;
+  position: fixed;
   min-width: 200px;
   max-width: 320px;
-  max-height: 60vh;
-  overflow-y: auto;
   display: none;
   flex-direction: column;
-  padding: 5px;
   border-radius: 8px;
   z-index: 2147483647;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  pointer-events: auto;
+  animation: abDropdownFade 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.65), 0 6px 12px -2px rgba(0, 0, 0, 0.4);
+  overflow: visible;
+  padding: 0;
 }
-.ab-dropdown-item:hover > .ab-submenu {
-  display: flex;
+.ab-submenu.ab-show {
+  display: flex !important;
 }
 
-/* Theming Dropdowns & Search Results Modal */
+.ab-submenu.ab-flyout-right {
+  border-top-left-radius: 0;
+}
+.ab-submenu.ab-flyout-left {
+  border-top-right-radius: 0;
+}
+
+/* Inner scroll container for submenu items */
+.ab-submenu-scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  width: 100%;
+}
+.ab-submenu-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.ab-submenu-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+}
+.ab-theme-modern-light .ab-submenu-scroll::-webkit-scrollbar-thumb,
+.ab-theme-modern-light.ab-submenu .ab-submenu-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Seamless Connecting Wings (Concave Fillets) for Submenus */
+.ab-submenu-wing {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Right-side flyout: top wing bridges parent right edge into submenu top */
+.ab-submenu-wing-top-right {
+  top: -12px;
+  left: 0;
+  background: radial-gradient(circle at 12px 0, transparent 11px, var(--ab-dropdown-border, rgba(255, 255, 255, 0.14)) 11.5px, var(--ab-dropdown-bg, rgba(15, 23, 42, 0.94)) 12.5px);
+}
+
+/* Left-side flyout: top wing bridges parent left edge into submenu top */
+.ab-submenu-wing-top-left {
+  top: -12px;
+  right: 0;
+  background: radial-gradient(circle at 0 0, transparent 11px, var(--ab-dropdown-border, rgba(255, 255, 255, 0.14)) 11.5px, var(--ab-dropdown-bg, rgba(15, 23, 42, 0.94)) 12.5px);
+}
+
+/* Seamless right/left junction corner flattening for parent dropdown */
+.ab-dropdown-portal.ab-has-submenu-right,
+.ab-submenu.ab-has-submenu-right {
+  border-bottom-right-radius: 0 !important;
+}
+.ab-dropdown-portal.ab-portal-bottom.ab-has-submenu-right,
+.ab-submenu.ab-portal-bottom.ab-has-submenu-right {
+  border-top-right-radius: 0 !important;
+}
+.ab-dropdown-portal.ab-has-submenu-left,
+.ab-submenu.ab-has-submenu-left {
+  border-bottom-left-radius: 0 !important;
+}
+.ab-dropdown-portal.ab-portal-bottom.ab-has-submenu-left,
+.ab-submenu.ab-portal-bottom.ab-has-submenu-left {
+  border-top-left-radius: 0 !important;
+}
+
+.ab-dropdown-item.ab-submenu-active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #38bdf8 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.ab-has-submenu-left .ab-dropdown-item.ab-submenu-active {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-top-right-radius: 6px !important;
+  border-bottom-right-radius: 6px !important;
+}
+.ab-theme-modern-light .ab-dropdown-item.ab-submenu-active {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #0284c7 !important;
+}
+
+.ab-submenu-arrow {
+  margin-left: auto;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+.ab-dropdown-item.ab-submenu-active .ab-submenu-arrow {
+  transform: translateX(2px);
+  opacity: 1;
+}
+
+/* Theming Dropdowns & Search Results Modal & Submenus */
 .ab-theme-dark-glass.ab-dropdown-portal,
 .ab-theme-dark-glass .ab-dropdown,
 .ab-theme-dark-glass .ab-submenu,
+.ab-theme-dark-glass.ab-submenu,
 .ab-theme-dark-glass .ab-search-results-modal {
   --ab-dropdown-bg: rgba(15, 23, 42, 0.94);
   --ab-dropdown-border: rgba(255, 255, 255, 0.14);
@@ -504,6 +656,7 @@
 .ab-theme-modern-light.ab-dropdown-portal,
 .ab-theme-modern-light .ab-dropdown,
 .ab-theme-modern-light .ab-submenu,
+.ab-theme-modern-light.ab-submenu,
 .ab-theme-modern-light .ab-search-results-modal {
   --ab-dropdown-bg: rgba(255, 255, 255, 0.96);
   --ab-dropdown-border: rgba(0, 0, 0, 0.12);
@@ -518,6 +671,7 @@
 .ab-theme-amoled.ab-dropdown-portal,
 .ab-theme-amoled .ab-dropdown,
 .ab-theme-amoled .ab-submenu,
+.ab-theme-amoled.ab-submenu,
 .ab-theme-amoled .ab-search-results-modal {
   --ab-dropdown-bg: #09090b;
   --ab-dropdown-border: #27272a;
@@ -530,6 +684,7 @@
 .ab-theme-chrome.ab-dropdown-portal,
 .ab-theme-chrome .ab-dropdown,
 .ab-theme-chrome .ab-submenu,
+.ab-theme-chrome.ab-submenu,
 .ab-theme-chrome .ab-search-results-modal {
   --ab-dropdown-bg: #292a2d;
   --ab-dropdown-border: #1c1d1f;
