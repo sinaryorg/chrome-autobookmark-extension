@@ -70,7 +70,7 @@ You can install AutoBookmark using either the official stores or directly from G
 | :--- | :--- | :--- |
 | **Microsoft Edge Add-ons** | Microsoft Edge | 🟢 **[Install from Edge Store](https://microsoftedge.microsoft.com/addons/detail/autobookmark-%E2%80%94-by-sinary/khedapggmjjlinfojcjebhmecaaikojo)** (Live) |
 | **Opera Add-ons** | Opera & Opera GX | In Review ([View Store](https://addons.opera.com)) |
-| **Mozilla Firefox Add-ons (AMO)** | Mozilla Firefox | In Review ([View Store](https://addons.mozilla.org)) |
+| **Mozilla Firefox Add-ons (AMO)** | Mozilla Firefox | 🟢 **[Install from Firefox Store](https://addons.mozilla.org/en-US/firefox/addon/autobookmark-by-sinary/)** (Live) |
 
 > [!NOTE]
 > **For Google Chrome users**: Google restricts direct 1-click webstore installs exclusively to its own Chrome Web Store. To use AutoBookmark in Chrome for free, use **Method 2 (Direct GitHub Release)** below — it takes only 10 seconds to load into `chrome://extensions` and runs with 100% native performance!
