@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS = {
   showFavicons: true,      // Show website favicons
   showBookmarkUrl: false,  // Show bookmark URL tooltip on hover (disabled by default)
   hideTooltips: true,      // Backward compatibility with previous version
-  barPosition: 'top',      // 'top' | 'bottom'
+  barPosition: 'top',      // 'top' | 'bottom' | 'left' | 'right'
   fontSize: 'medium',      // 'small' | 'medium' | 'large'
   pinned: false            // Keep bar pinned open
 };

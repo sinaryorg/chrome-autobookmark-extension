@@ -821,10 +821,13 @@
     dropdownPortal.innerHTML = '';
     dropdownPortal.className = `ab-dropdown-portal ab-theme-${settings.theme || 'dark-glass'} ab-show`;
 
-    if (settings.barPosition === 'bottom') {
+    const pos = settings.barPosition || 'top';
+    if (pos === 'bottom') {
       dropdownPortal.classList.add('ab-portal-bottom');
-    } else {
-      dropdownPortal.classList.remove('ab-portal-bottom');
+    } else if (pos === 'left') {
+      dropdownPortal.classList.add('ab-portal-flyout-right');
+    } else if (pos === 'right') {
+      dropdownPortal.classList.add('ab-portal-flyout-left');
     }
 
     // Seamless connecting concave fillet wings
@@ -954,20 +957,38 @@
     // Position portal flush with the bar (0px gap for seamless connection)
     const rect = folderElement.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
-    const isBottom = settings.barPosition === 'bottom';
 
-    if (isBottom) {
+    if (pos === 'left') {
+      dropdownPortal.style.left = `${Math.round(barRect.right)}px`;
+      dropdownPortal.style.right = 'auto';
+      const portalHeight = 350;
+      const maxTop = Math.max(8, window.innerHeight - portalHeight);
+      const clampedTop = Math.max(8, Math.min(rect.top, maxTop));
+      dropdownPortal.style.top = `${clampedTop}px`;
+      dropdownPortal.style.bottom = 'auto';
+    } else if (pos === 'right') {
+      dropdownPortal.style.left = 'auto';
+      dropdownPortal.style.right = `${Math.max(8, Math.round(window.innerWidth - barRect.left))}px`;
+      const portalHeight = 350;
+      const maxTop = Math.max(8, window.innerHeight - portalHeight);
+      const clampedTop = Math.max(8, Math.min(rect.top, maxTop));
+      dropdownPortal.style.top = `${clampedTop}px`;
+      dropdownPortal.style.bottom = 'auto';
+    } else if (pos === 'bottom') {
       dropdownPortal.style.top = 'auto';
       dropdownPortal.style.bottom = `${window.innerHeight - barRect.top}px`;
+      const maxLeft = Math.max(16, window.innerWidth - 356);
+      const clampedLeft = Math.max(16, Math.min(rect.left, maxLeft));
+      dropdownPortal.style.left = `${clampedLeft}px`;
+      dropdownPortal.style.right = 'auto';
     } else {
       dropdownPortal.style.top = `${barRect.bottom}px`;
       dropdownPortal.style.bottom = 'auto';
+      const maxLeft = Math.max(16, window.innerWidth - 356);
+      const clampedLeft = Math.max(16, Math.min(rect.left, maxLeft));
+      dropdownPortal.style.left = `${clampedLeft}px`;
+      dropdownPortal.style.right = 'auto';
     }
-
-    // Clamp left so dropdown and wings stay fully on screen
-    const maxLeft = Math.max(16, window.innerWidth - 356);
-    const clampedLeft = Math.max(16, Math.min(rect.left, maxLeft));
-    dropdownPortal.style.left = `${clampedLeft}px`;
 
     clearTimeout(hideTimer);
     isMouseInsideDropdown = true;
@@ -1735,7 +1756,8 @@
     }, 450);
   }
 
-  function getDropPositionOnTrack(clientX) {
+  function getDropPositionOnTrack(clientX, clientY) {
+    const isVertical = (settings.barPosition === 'left' || settings.barPosition === 'right');
     const items = Array.from(itemsTrack.querySelectorAll('.ab-item:not(.ab-dragging)'));
     if (items.length === 0) {
       return { targetItem: null, insertBefore: true, targetIndex: 0 };
@@ -1744,9 +1766,16 @@
     for (let i = 0; i < items.length; i++) {
       const itemEl = items[i];
       const rect = itemEl.getBoundingClientRect();
-      const mid = rect.left + rect.width / 2;
-      if (clientX < mid) {
-        return { targetItem: itemEl, insertBefore: true, targetIndex: i };
+      if (isVertical) {
+        const mid = rect.top + rect.height / 2;
+        if (clientY < mid) {
+          return { targetItem: itemEl, insertBefore: true, targetIndex: i };
+        }
+      } else {
+        const mid = rect.left + rect.width / 2;
+        if (clientX < mid) {
+          return { targetItem: itemEl, insertBefore: true, targetIndex: i };
+        }
       }
     }
 
@@ -1754,13 +1783,22 @@
     return { targetItem: last, insertBefore: false, targetIndex: items.length };
   }
 
-  function handleTrackAutoScroll(clientX) {
+  function handleTrackAutoScroll(clientX, clientY) {
     const trackRect = itemsTrack.getBoundingClientRect();
+    const isVertical = (settings.barPosition === 'left' || settings.barPosition === 'right');
     const edgeDistance = 45;
-    if (clientX < trackRect.left + edgeDistance) {
-      itemsTrack.scrollLeft -= 8;
-    } else if (clientX > trackRect.right - edgeDistance) {
-      itemsTrack.scrollLeft += 8;
+    if (isVertical) {
+      if (clientY < trackRect.top + edgeDistance) {
+        itemsTrack.scrollTop -= 8;
+      } else if (clientY > trackRect.bottom - edgeDistance) {
+        itemsTrack.scrollTop += 8;
+      }
+    } else {
+      if (clientX < trackRect.left + edgeDistance) {
+        itemsTrack.scrollLeft -= 8;
+      } else if (clientX > trackRect.right - edgeDistance) {
+        itemsTrack.scrollLeft += 8;
+      }
     }
   }
 
@@ -1770,15 +1808,19 @@
     e.dataTransfer.dropEffect = 'move';
     clearTimeout(hideTimer);
 
-    handleTrackAutoScroll(e.clientX);
+    handleTrackAutoScroll(e.clientX, e.clientY);
+
+    const isVertical = (settings.barPosition === 'left' || settings.barPosition === 'right');
 
     // Check if hovering directly over a folder chip on the track
     const folderTarget = e.target.closest('.ab-item.ab-folder');
     if (folderTarget && !folderTarget.classList.contains('ab-dragging')) {
       const rect = folderTarget.getBoundingClientRect();
-      const relativeX = (e.clientX - rect.left) / rect.width;
+      const relativeCoord = isVertical
+        ? (e.clientY - rect.top) / rect.height
+        : (e.clientX - rect.left) / rect.width;
       // If hovering near the middle 60% of folder chip (0.2 to 0.8), treat as drop-into-folder
-      if (relativeX > 0.2 && relativeX < 0.8) {
+      if (relativeCoord > 0.2 && relativeCoord < 0.8) {
         hideDropIndicator();
         const folderId = folderTarget.dataset.bookmarkId;
         const folderObj = findBookmarkById(folderId);
@@ -1791,12 +1833,27 @@
 
     // Otherwise, position the drop indicator between items
     clearFolderDragHighlights();
-    const { targetItem, insertBefore } = getDropPositionOnTrack(e.clientX);
+    const { targetItem, insertBefore } = getDropPositionOnTrack(e.clientX, e.clientY);
     if (targetItem) {
-      const leftPos = insertBefore 
-        ? targetItem.offsetLeft - 3 
-        : targetItem.offsetLeft + targetItem.offsetWidth + 1;
-      dropIndicator.style.left = `${leftPos}px`;
+      if (isVertical) {
+        const topPos = insertBefore
+          ? targetItem.offsetTop - 2
+          : targetItem.offsetTop + targetItem.offsetHeight + 1;
+        dropIndicator.style.top = `${topPos}px`;
+        dropIndicator.style.left = '4px';
+        dropIndicator.style.right = '4px';
+        dropIndicator.style.width = 'auto';
+        dropIndicator.style.height = '2px';
+      } else {
+        const leftPos = insertBefore 
+          ? targetItem.offsetLeft - 3 
+          : targetItem.offsetLeft + targetItem.offsetWidth + 1;
+        dropIndicator.style.left = `${leftPos}px`;
+        dropIndicator.style.top = '';
+        dropIndicator.style.right = '';
+        dropIndicator.style.width = '';
+        dropIndicator.style.height = '';
+      }
       dropIndicator.classList.add('ab-show');
     }
   });
@@ -1814,12 +1871,16 @@
     hideDropIndicator();
     clearFolderDragHighlights();
 
+    const isVertical = (settings.barPosition === 'left' || settings.barPosition === 'right');
+
     // Check if dropped directly onto a folder chip
     const folderTarget = e.target.closest('.ab-item.ab-folder');
     if (folderTarget && !folderTarget.classList.contains('ab-dragging')) {
       const rect = folderTarget.getBoundingClientRect();
-      const relativeX = (e.clientX - rect.left) / rect.width;
-      if (relativeX > 0.2 && relativeX < 0.8) {
+      const relativeCoord = isVertical
+        ? (e.clientY - rect.top) / rect.height
+        : (e.clientX - rect.left) / rect.width;
+      if (relativeCoord > 0.2 && relativeCoord < 0.8) {
         const targetFolderId = folderTarget.dataset.bookmarkId;
         if (targetFolderId && !isDescendantOrSelf(draggedItemData.id, targetFolderId)) {
           moveBookmarkTo(draggedItemData.id, targetFolderId, null);
@@ -1829,7 +1890,7 @@
     }
 
     // Dropped between items on the main bar
-    const { targetItem, insertBefore, targetIndex } = getDropPositionOnTrack(e.clientX);
+    const { targetItem, insertBefore, targetIndex } = getDropPositionOnTrack(e.clientX, e.clientY);
     let newIndex = targetIndex;
     if (targetItem) {
       const targetId = targetItem.dataset.bookmarkId;
@@ -1849,14 +1910,26 @@
   itemsTrack.addEventListener('scroll', () => {
     updateScrollArrows();
     if (activeFolderItem && dropdownPortal.classList.contains('ab-show')) {
+      const isVertical = (settings.barPosition === 'left' || settings.barPosition === 'right');
       const rect = activeFolderItem.getBoundingClientRect();
       const trackRect = itemsTrack.getBoundingClientRect();
-      if (rect.right < trackRect.left || rect.left > trackRect.right) {
-        closeAllDropdowns();
+      if (isVertical) {
+        if (rect.bottom < trackRect.top || rect.top > trackRect.bottom) {
+          closeAllDropdowns();
+        } else {
+          const portalHeight = 350;
+          const maxTop = Math.max(8, window.innerHeight - portalHeight);
+          const clampedTop = Math.max(8, Math.min(rect.top, maxTop));
+          dropdownPortal.style.top = `${clampedTop}px`;
+        }
       } else {
-        const maxLeft = Math.max(8, window.innerWidth - 340);
-        const clampedLeft = Math.max(8, Math.min(rect.left, maxLeft));
-        dropdownPortal.style.left = `${clampedLeft}px`;
+        if (rect.right < trackRect.left || rect.left > trackRect.right) {
+          closeAllDropdowns();
+        } else {
+          const maxLeft = Math.max(8, window.innerWidth - 340);
+          const clampedLeft = Math.max(8, Math.min(rect.left, maxLeft));
+          dropdownPortal.style.left = `${clampedLeft}px`;
+        }
       }
     }
   }, { passive: true });
@@ -2038,26 +2111,57 @@
     bar.className = `ab-bar ab-theme-${settings.theme || 'dark-glass'}`;
 
     // Apply Position
-    if (settings.barPosition === 'bottom') {
+    barContainer.classList.remove('ab-position-bottom', 'ab-position-left', 'ab-position-right');
+    triggerZone.classList.remove('ab-bottom', 'ab-left', 'ab-right');
+
+    const pos = settings.barPosition || 'top';
+    const triggerSize = `${settings.triggerHeight || 8}px`;
+
+    if (pos === 'bottom') {
       barContainer.classList.add('ab-position-bottom');
       triggerZone.classList.add('ab-bottom');
       triggerZone.style.top = 'auto';
       triggerZone.style.bottom = '0';
+      triggerZone.style.left = '0';
+      triggerZone.style.right = '0';
+      triggerZone.style.width = '100vw';
+      triggerZone.style.height = triggerSize;
+    } else if (pos === 'left') {
+      barContainer.classList.add('ab-position-left');
+      triggerZone.classList.add('ab-left');
+      triggerZone.style.top = '0';
+      triggerZone.style.bottom = '0';
+      triggerZone.style.left = '0';
+      triggerZone.style.right = 'auto';
+      triggerZone.style.width = triggerSize;
+      triggerZone.style.height = '100vh';
+    } else if (pos === 'right') {
+      barContainer.classList.add('ab-position-right');
+      triggerZone.classList.add('ab-right');
+      triggerZone.style.top = '0';
+      triggerZone.style.bottom = '0';
+      triggerZone.style.left = 'auto';
+      triggerZone.style.right = '0';
+      triggerZone.style.width = triggerSize;
+      triggerZone.style.height = '100vh';
     } else {
-      barContainer.classList.remove('ab-position-bottom');
-      triggerZone.classList.remove('ab-bottom');
       triggerZone.style.top = '0';
       triggerZone.style.bottom = 'auto';
+      triggerZone.style.left = '0';
+      triggerZone.style.right = '0';
+      triggerZone.style.width = '100vw';
+      triggerZone.style.height = triggerSize;
     }
-
-    // Trigger Height
-    triggerZone.style.height = `${settings.triggerHeight || 8}px`;
 
     // Update active dropdown portal theme if open
     if (activeFolderItem && dropdownPortal.classList.contains('ab-show')) {
       dropdownPortal.className = `ab-dropdown-portal ab-theme-${settings.theme || 'dark-glass'} ab-show`;
-      if (settings.barPosition === 'bottom') {
+      if (pos === 'bottom') {
         dropdownPortal.classList.add('ab-portal-bottom');
+      } else if (pos === 'left') {
+        dropdownPortal.classList.add('ab-portal-flyout-right');
+      } else if (pos === 'right') {
+        dropdownPortal.classList.add('ab-portal-flyout-left');
       }
     }
 
@@ -2084,18 +2188,27 @@
   window.addEventListener('mousemove', (e) => {
     if (!settings.enabled) return;
     const triggerPx = settings.triggerHeight || 8;
-    const isAtTriggerEdge = (settings.barPosition === 'bottom')
-      ? (window.innerHeight - e.clientY <= triggerPx)
-      : (e.clientY <= triggerPx);
+    const pos = settings.barPosition || 'top';
+    let isAtTriggerEdge = false;
+    let isPastBar = false;
+
+    if (pos === 'bottom') {
+      isAtTriggerEdge = (window.innerHeight - e.clientY <= triggerPx);
+      isPastBar = (window.innerHeight - e.clientY > 50);
+    } else if (pos === 'left') {
+      isAtTriggerEdge = (e.clientX <= triggerPx);
+      isPastBar = (e.clientX > 250);
+    } else if (pos === 'right') {
+      isAtTriggerEdge = (window.innerWidth - e.clientX <= triggerPx);
+      isPastBar = (window.innerWidth - e.clientX > 250);
+    } else {
+      isAtTriggerEdge = (e.clientY <= triggerPx);
+      isPastBar = (e.clientY > 50);
+    }
 
     if (isAtTriggerEdge) {
       showBar();
     } else if (isBarVisible && !isMouseInsideBar && !isMouseInsideDropdown && !isPinned && !isDraggingBookmark && !isContextMenuOpen && !isModalOpen) {
-      // Check if mouse is beyond bar threshold (38px + buffer)
-      const isPastBar = (settings.barPosition === 'bottom')
-        ? (window.innerHeight - e.clientY > 50)
-        : (e.clientY > 50);
-
       if (isPastBar) {
         scheduleHide();
       }

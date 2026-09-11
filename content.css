@@ -32,6 +32,24 @@
   bottom: 0;
 }
 
+.ab-trigger-zone.ab-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  width: 8px;
+  height: 100vh;
+}
+
+.ab-trigger-zone.ab-right {
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  width: 8px;
+  height: 100vh;
+}
+
 /* Floating Bookmark Bar Shell */
 .ab-bar-container {
   position: fixed;
@@ -54,10 +72,32 @@
   transform: translateY(100%);
 }
 
+/* Left vertical sidebar position support */
+.ab-bar-container.ab-position-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  width: 210px;
+  height: 100vh;
+  transform: translateX(-100%);
+}
+
+/* Right vertical sidebar position support */
+.ab-bar-container.ab-position-right {
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  width: 210px;
+  height: 100vh;
+  transform: translateX(100%);
+}
+
 /* Visible / Pinned State */
 .ab-bar-container.ab-visible,
 .ab-bar-container.ab-pinned {
-  transform: translateY(0) !important;
+  transform: translate(0, 0) !important;
   opacity: 1 !important;
   pointer-events: auto !important;
 }
@@ -126,6 +166,207 @@
 .ab-position-bottom .ab-theme-chrome {
   border-bottom: none;
   border-top: 1px solid #1c1d1f;
+}
+
+/* Left / Right theme borders and shadows */
+.ab-position-left .ab-theme-dark-glass {
+  border-bottom: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 10px 0 25px -5px rgba(0, 0, 0, 0.5), 4px 0 6px -2px rgba(0, 0, 0, 0.3);
+}
+.ab-position-right .ab-theme-dark-glass {
+  border-bottom: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.5), -4px 0 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.ab-position-left .ab-theme-modern-light {
+  border-bottom: none;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 10px 0 25px -5px rgba(0, 0, 0, 0.12);
+}
+.ab-position-right .ab-theme-modern-light {
+  border-bottom: none;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.12);
+}
+
+.ab-position-left .ab-theme-amoled {
+  border-bottom: none;
+  border-right: 1px solid #27272a;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+}
+.ab-position-right .ab-theme-amoled {
+  border-bottom: none;
+  border-left: 1px solid #27272a;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.ab-position-left .ab-theme-chrome {
+  border-bottom: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.4);
+}
+.ab-position-right .ab-theme-chrome {
+  border-bottom: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Vertical Sidebar Layout (Left / Right) */
+.ab-position-left .ab-bar,
+.ab-position-right .ab-bar {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 8px 6px;
+  gap: 6px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.ab-position-left .ab-left-actions,
+.ab-position-right .ab-left-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.ab-position-left .ab-divider,
+.ab-position-right .ab-divider {
+  width: 100%;
+  height: 1px;
+  margin: 2px 0;
+}
+
+.ab-position-left .ab-search-container,
+.ab-position-right .ab-search-container {
+  width: 100% !important;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.ab-position-left .ab-search-input,
+.ab-position-right .ab-search-input {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  padding-left: 30px;
+}
+
+.ab-position-left .ab-right-actions,
+.ab-position-right .ab-right-actions {
+  order: 1;
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.ab-position-left .ab-items-wrapper,
+.ab-position-right .ab-items-wrapper {
+  order: 2;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ab-position-left .ab-drop-indicator,
+.ab-position-right .ab-drop-indicator {
+  left: 6px !important;
+  right: 6px !important;
+  width: auto !important;
+  height: 2px !important;
+  transform: none !important;
+}
+
+.ab-position-left .ab-items-track,
+.ab-position-right .ab-items-track {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  gap: 2px;
+  scrollbar-width: thin;
+  padding: 2px 0;
+}
+
+.ab-position-left .ab-items-track::-webkit-scrollbar,
+.ab-position-right .ab-items-track::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ab-position-left .ab-item,
+.ab-position-right .ab-item {
+  width: 100%;
+  max-width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  justify-content: flex-start;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.ab-position-left .ab-item .ab-title,
+.ab-position-right .ab-item .ab-title {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ab-position-left .ab-scroll-btn,
+.ab-position-right .ab-scroll-btn {
+  display: none !important;
+}
+
+/* Portal adaptations for horizontal flyouts */
+.ab-dropdown-portal.ab-portal-flyout-right {
+  border-radius: 0 10px 10px 10px;
+  border-top: 1px solid var(--ab-dropdown-border, rgba(255, 255, 255, 0.14)) !important;
+  border-left: none !important;
+  animation: abDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ab-dropdown-portal.ab-portal-flyout-left {
+  border-radius: 10px 0 10px 10px;
+  border-top: 1px solid var(--ab-dropdown-border, rgba(255, 255, 255, 0.14)) !important;
+  border-right: none !important;
+  animation: abDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ab-portal-flyout-right .ab-portal-wing,
+.ab-portal-flyout-left .ab-portal-wing {
+  display: none !important;
+}
+
+.ab-position-left .ab-search-results-modal {
+  top: 0 !important;
+  left: 100% !important;
+  right: auto !important;
+  border-radius: 0 10px 10px 10px;
+  border-top: 1px solid var(--ab-dropdown-border, rgba(255, 255, 255, 0.14)) !important;
+  border-left: none !important;
+}
+
+.ab-position-right .ab-search-results-modal {
+  top: 0 !important;
+  right: 100% !important;
+  left: auto !important;
+  border-radius: 10px 0 10px 10px;
+  border-top: 1px solid var(--ab-dropdown-border, rgba(255, 255, 255, 0.14)) !important;
+  border-right: none !important;
+}
+
+.ab-position-left .ab-search-results-modal .ab-search-wing,
+.ab-position-right .ab-search-results-modal .ab-search-wing {
+  display: none !important;
 }
 
 /* Sinary Brand Button */

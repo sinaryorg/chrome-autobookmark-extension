@@ -151,7 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'chrome': 'Classic'
       };
       const themeName = themeLabels[s.theme || 'dark-glass'] || 'Dark Glass';
-      const posName = (s.barPosition || 'top') === 'bottom' ? 'Bottom' : 'Top';
+      const posLabels = { 'top': 'Top', 'bottom': 'Bottom', 'left': 'Left', 'right': 'Right' };
+      const posName = posLabels[s.barPosition || 'top'] || 'Top';
       sumAppearance.textContent = `${themeName} • ${posName}`;
     }
     if (sumBehavior) {
