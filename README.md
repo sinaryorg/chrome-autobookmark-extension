@@ -32,10 +32,13 @@ AutoBookmark is built with cross-browser compatibility and runs natively across 
 
 ## ✨ Features
 
-- **⚡ Hover-Activated Slide-in**: Move your cursor to the top edge of any webpage (within 8px) to reveal your bookmarks.
+- **⚡ Hover-Activated Slide-in**: Move your cursor to your designated screen edge (Top, Bottom, Left, or Right) to reveal your bookmarks.
 - **🍃 Smooth Auto-Hide**: Slides away smoothly when you move your cursor back into the page content.
-- **🔀 Drag-and-Drop Organization**: Reorder bookmarks and folders on the fly with animated insertion guidelines and folder-drop targets.
-- **🖱️ Right-Click Context Menu**: Full management at your fingertips — Open in New Tab, Edit Bookmark, Rename Folder, and Delete.
+- **🧭 4-Direction Edge Docking**: Choose between Top, Bottom, Left, or Right screen edge. Left and Right docking turns AutoBookmark into a vertical sidebar dock with full-height layout and horizontal flyout dropdowns.
+- **➕ 1-Click "Add Current Tab"**: Quickly bookmark the active webpage with a single click from the bar's header controls or inside any folder dropdown, complete with checkmark feedback and toast notifications.
+- **📂 "Open All in Tabs" for Folders**: Middle-click any folder or right-click to open all contained links simultaneously in new background tabs.
+- **🔀 Drag-and-Drop Organization**: Reorder bookmarks and folders on the fly with animated insertion guidelines and folder-drop targets in both horizontal and vertical modes.
+- **🖱️ Right-Click Context Menu**: Full in-place management — Open in New Tab, Bookmark Current Tab Here, Open All in Tabs, Edit Title/URL, Rename Folder, and Delete.
 - **✏️ In-Place Edit & Rename**: Update titles and URLs directly from the bar with sleek glassmorphic modal dialogs.
 - **📁 Multi-Level Folder Dropdowns**: Browse deep nested subfolders with seamless connected flyout portals.
 - **🔍 Connected Search with Bevel**: Instant bookmark search connected seamlessly to the navbar with a curved bevel fillet and glass highlight.
@@ -110,7 +113,7 @@ Every release provides two dedicated packages tailored for specific browser engi
 
 To get the full immersive experience and **reclaim 100% of your vertical screen real estate**, turn off your browser's default static bookmark bar.
 
-AutoBookmark replaces the static bar by floating smoothly into view **only when you hover near the top edge**!
+AutoBookmark replaces the static bar by floating smoothly into view **only when you hover near your chosen screen edge (Top, Bottom, Left, or Right)**!
 
 ### ⚡ Quick Shortcut (All Browsers)
 Press **<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>** (Windows / Linux) or **<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>** (macOS) to instantly toggle off the default bar.
@@ -125,7 +128,7 @@ Press **<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>** (Windows / Linux) or
 | **Opera & Opera GX** | Press <kbd>Alt+P</kbd> (Settings) > search **"Bookmarks"** > toggle off **"Show bookmarks bar"**. |
 | **Brave Browser** | Press <kbd>Ctrl+Shift+B</kbd>, or go to **Settings** > **Appearance** > toggle off **"Show bookmarks bar"**. |
 
-Once hidden, simply glide your mouse cursor to the top edge of any page to summon your floating bookmarks on demand!
+Once hidden, simply glide your mouse cursor to your chosen edge of any page to summon your floating bookmarks on demand!
 
 ---
 
@@ -143,7 +146,7 @@ Click the **AutoBookmark** icon in your browser toolbar to customize:
 - **Trigger Proximity**: Adjust sensitivity (2px to 25px from the top edge).
 - **Auto-Hide Delay**: Configure hide duration (100ms to 1500ms).
 - **Appearance Themes**: Switch between Dark Glass, Modern Light, AMOLED Black, and Classic Chrome.
-- **Position**: Place on the Top or Bottom screen edge.
+- **Position**: Dock along the Top, Bottom, Left, or Right screen edge (Left/Right activates vertical sidebar mode).
 - **Behavior**: Choose whether bookmarks open in the current tab or a new tab, toggle website favicons, and toggle bookmark URL previews on hover.
 
 ---
@@ -233,7 +236,7 @@ Version 1.1.0 is a major update adding full in-place bookmark management, drag-a
 
 ## 🗺️ Roadmap & Upcoming Features
 
-We are continually improving AutoBookmark! Check out **[ROADMAP.md](ROADMAP.md)** for planned future updates (v1.2.0+), including "+ New Folder" buttons, "Open All in Tabs" batch folder actions, and bookmark count badges!
+We are continually improving AutoBookmark! Check out **[ROADMAP.md](ROADMAP.md)** for planned future updates (v1.3.0+), including folder item count badges, in-place "+ New Folder" creation, custom accent color pickers, and global spotlight search shortcuts!
 
 ---
 

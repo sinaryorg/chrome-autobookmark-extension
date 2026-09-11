@@ -90,47 +90,54 @@ The following features and improvements were successfully implemented and shippe
 
 ---
 
-## 🎯 Target Version: v1.2.0+ (Upcoming Roadmap)
+## 🎯 Target Version: v1.3.0+ (Upcoming Roadmap)
 
-### 1. ➕ Quick Add & Create Actions
-- **Feature**: Fast bookmark and folder creation directly from the bar.
+### 1. 📁 "+ New Folder" In-Place Creation
+- **Feature**: Fast folder creation directly from the bar and inside dropdowns.
 - **UI / UX**:
-  - `+ Add Current Tab` button to quickly bookmark the active page to the bar or a selected folder.
-  - `+ New Folder` action button in the bar and within dropdown menus.
+  - `+ New Folder` action button in the bar's header and inside dropdown menus.
+  - Glassmorphic modal to enter folder name and select target location.
 - **Technical Implementation**:
-  - `chrome.tabs.query({ active: true, currentWindow: true })` + `chrome.bookmarks.create()`.
+  - `chrome.bookmarks.create({ parentId, title })`.
 
 ---
 
-### 2. 📂 "Open All in Tabs" for Folders
-- **Feature**: Open all links in a folder (and its subfolders) in new tabs with a single click.
+### 2. 🔢 Folder Bookmark Count Badges
+- **Feature**: Subtle badge counter showing the number of bookmarks stored within each folder.
 - **UI / UX**:
-  - Right-click context menu option: **"Open All in New Tabs"**.
-  - Middle-click (<kbd>auxclick</kbd>) on a folder icon/chip to trigger batch open.
+  - Lightweight pill counter next to folder titles (e.g. `Dev (14)`, `Reading (5)`).
+  - Can be toggled on/off in the Settings popup.
+
+---
+
+### 3. ⌨️ Global Spotlight & Quick-Search Launcher (`Alt + B`)
+- **Feature**: Hotkey to instantly summon the bar and focus search without using the mouse.
+- **UI / UX**:
+  - Press <kbd>Alt + B</kbd> to reveal the bar and focus the search bar immediately.
+  - Arrow key (<kbd>↑</kbd> / <kbd>↓</kbd>) navigation and <kbd>Enter</kbd> to launch.
 - **Technical Implementation**:
-  - Traversal of folder children and batch tab creation via `chrome.tabs.create`.
+  - `chrome.commands` shortcut listener + shadow root keyboard event trap.
 
 ---
 
-### 3. 🔢 Folder Bookmark Count Badges
-- **Feature**: Small subtle badge counter showing the number of bookmarks stored within each folder.
+### 4. 🎨 Custom Accent Color & Glow Customizer
+- **Feature**: Let users choose their preferred glow and active indicator color.
 - **UI / UX**:
-  - Lightweight pill/badge counter next to the folder title inside dropdowns.
+  - Accent palette in Settings popup: Neon Cyan (Default), Violet, Emerald, Amber, Sakura Pink, and custom hex input.
 
 ---
 
-### 4. ⌨️ Full Keyboard Navigation
-- **Feature**: Complete keyboard accessibility across the bar, dropdowns, and nested submenus.
+### 5. 🧹 Duplicate & Broken Link Cleaner
+- **Feature**: Health scan tool to identify duplicate bookmarks and empty folders.
 - **UI / UX**:
-  - Navigate with <kbd>Tab</kbd>, <kbd>Arrow Keys</kbd>, <kbd>Enter</kbd>, and <kbd>Escape</kbd>.
-  - Context menu trigger via <kbd>Menu</kbd> key or <kbd>Shift + F10</kbd>.
+  - "Bookmark Health" tab in the Settings popup with 1-click batch cleanup.
 
 ---
 
-### 5. 💾 Backup & Export Bookmarks
-- **Feature**: Quick export/import of bookmarks in standard HTML format.
+### 6. 💾 One-Click Backup & Export (JSON / HTML)
+- **Feature**: Export and restore your complete bookmark structure.
 - **UI / UX**:
-  - Settings popup option to download a JSON/HTML bookmark backup.
+  - Settings popup option to download an instant JSON/HTML backup file and restore anytime.
 
 ---
 
