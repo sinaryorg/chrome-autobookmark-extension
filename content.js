@@ -73,6 +73,39 @@
     <img src="${chrome.runtime.getURL('icons/icon48.png')}" class="ab-sinary-icon" alt="SINARY" />
   `;
 
+  const addCurrentTabBtn = document.createElement('button');
+  addCurrentTabBtn.className = 'ab-action-btn ab-add-tab-btn';
+  addCurrentTabBtn.title = 'Bookmark current tab to bar';
+  addCurrentTabBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      <line x1="12" y1="8" x2="12" y2="14"/>
+      <line x1="9" y1="11" x2="15" y2="11"/>
+    </svg>
+  `;
+
+  addCurrentTabBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    addCurrentTabBtn.classList.add('ab-btn-success');
+    addCurrentTabBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    `;
+    setTimeout(() => {
+      addCurrentTabBtn.classList.remove('ab-btn-success');
+      addCurrentTabBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          <line x1="12" y1="8" x2="12" y2="14"/>
+          <line x1="9" y1="11" x2="15" y2="11"/>
+        </svg>
+      `;
+    }, 1500);
+
+    createBookmarkInFolder(barFolderId);
+  });
+
   const pinBtn = document.createElement('button');
   pinBtn.className = 'ab-action-btn';
   pinBtn.title = 'Pin bookmark bar (Alt+B)';
@@ -83,6 +116,7 @@
   `;
 
   leftActions.appendChild(sinaryLogoBtn);
+  leftActions.appendChild(addCurrentTabBtn);
   leftActions.appendChild(pinBtn);
 
   const divider1 = document.createElement('div');
@@ -230,11 +264,30 @@
     scheduleHide();
   });
 
+  const toastNotification = document.createElement('div');
+  toastNotification.className = 'ab-toast';
+
   shadow.appendChild(triggerZone);
   shadow.appendChild(barContainer);
   shadow.appendChild(dropdownPortal);
   shadow.appendChild(contextMenu);
   shadow.appendChild(modalBackdrop);
+  shadow.appendChild(toastNotification);
+
+  let toastTimer = null;
+  function showToast(message) {
+    toastNotification.innerHTML = `
+      <svg class="ab-toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>${message}</span>
+    `;
+    toastNotification.classList.add('ab-show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastNotification.classList.remove('ab-show');
+    }, 2200);
+  }
 
   // Append host to DOM safely
   function mountHost() {
@@ -615,6 +668,62 @@
     }, 50);
   }
 
+  // Recursively collect all URLs from a folder
+  function getFolderChildUrls(folderObj) {
+    if (!folderObj) return [];
+    const urls = [];
+    function traverse(node) {
+      if (!node) return;
+      if (node.url && (node.url.startsWith('http://') || node.url.startsWith('https://') || node.url.startsWith('chrome://') || node.url.startsWith('edge://') || node.url.startsWith('file://'))) {
+        urls.push(node.url);
+      }
+      if (Array.isArray(node.children)) {
+        node.children.forEach(child => traverse(child));
+      }
+    }
+    if (Array.isArray(folderObj.children)) {
+      folderObj.children.forEach(child => traverse(child));
+    }
+    return urls;
+  }
+
+  // Open multiple URLs in background tabs
+  function openMultipleTabs(urls) {
+    if (!urls || urls.length === 0) {
+      showToast('Folder is empty');
+      return;
+    }
+    chrome.runtime.sendMessage({
+      type: 'OPEN_MULTIPLE_TABS',
+      urls: urls
+    }, (res) => {
+      if (res && res.success) {
+        showToast(`Opened ${res.opened} tab${res.opened === 1 ? '' : 's'}`);
+      }
+    });
+  }
+
+  // Create bookmark in specific folder
+  function createBookmarkInFolder(folderId, customTitle, customUrl) {
+    const title = customTitle || document.title || 'New Bookmark';
+    const url = customUrl || window.location.href;
+
+    chrome.runtime.sendMessage({
+      type: 'CREATE_BOOKMARK',
+      parentId: folderId || barFolderId,
+      title: title,
+      url: url
+    }, (res) => {
+      if (res && res.success) {
+        const folderObj = findBookmarkById(folderId);
+        const folderName = folderObj && folderObj.title ? `"${folderObj.title}"` : 'Bookmarks Bar';
+        showToast(`Bookmarked to ${folderName}`);
+      } else {
+        showToast(res?.error || 'Failed to add bookmark');
+      }
+    });
+  }
+
   function handleContextMenu(e, itemData) {
     if (!itemData || !itemData.id) return;
     e.preventDefault();
@@ -644,6 +753,52 @@
     const canDelete = !isRootFolder(itemData.id);
 
     contextMenu.innerHTML = '';
+
+    if (isFolder) {
+      const folderObj = findBookmarkById(itemData.id);
+      const childLinks = getFolderChildUrls(folderObj);
+
+      // Open All in New Tabs
+      const openAllItem = document.createElement('div');
+      openAllItem.className = `ab-context-item ${childLinks.length === 0 ? 'ab-disabled' : ''}`;
+      openAllItem.innerHTML = `
+        <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 21h14a2 2 0 0 0 2-2V7"/>
+        </svg>
+        <span>Open All in Tabs (${childLinks.length})</span>
+      `;
+      if (childLinks.length > 0) {
+        openAllItem.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          closeContextMenu();
+          openMultipleTabs(childLinks);
+        });
+      }
+      contextMenu.appendChild(openAllItem);
+
+      // Bookmark Current Tab Here
+      const addHereContextItem = document.createElement('div');
+      addHereContextItem.className = 'ab-context-item';
+      addHereContextItem.innerHTML = `
+        <svg class="ab-context-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          <line x1="12" y1="8" x2="12" y2="14"/>
+          <line x1="9" y1="11" x2="15" y2="11"/>
+        </svg>
+        <span>Bookmark Current Tab Here</span>
+      `;
+      addHereContextItem.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        closeContextMenu();
+        createBookmarkInFolder(itemData.id);
+      });
+      contextMenu.appendChild(addHereContextItem);
+
+      const sep = document.createElement('div');
+      sep.className = 'ab-context-separator';
+      contextMenu.appendChild(sep);
+    }
 
     if (!isFolder && itemData.url) {
       const openTabItem = document.createElement('div');
@@ -847,6 +1002,31 @@
     const dropdownDropIndicator = document.createElement('div');
     dropdownDropIndicator.className = 'ab-dropdown-drop-indicator';
     scrollContainer.appendChild(dropdownDropIndicator);
+
+    // Quick Add Button inside Dropdown
+    const addHereBtn = document.createElement('div');
+    addHereBtn.className = 'ab-dropdown-add-btn';
+    addHereBtn.innerHTML = `
+      <svg class="ab-add-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      <span>Bookmark current tab here</span>
+    `;
+    addHereBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      addHereBtn.classList.add('ab-btn-success');
+      addHereBtn.innerHTML = `
+        <svg class="ab-add-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Added to "${folder.title || 'Folder'}"</span>
+      `;
+      createBookmarkInFolder(folder.id);
+      setTimeout(() => {
+        closeAllDropdowns();
+      }, 900);
+    });
+    scrollContainer.appendChild(addHereBtn);
 
     if (!folder.children || folder.children.length === 0) {
       const emptyMsg = document.createElement('div');
@@ -1415,6 +1595,19 @@
           level: level
         });
       });
+
+      folderDiv.addEventListener('auxclick', (e) => {
+        if (e.button === 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          const urls = getFolderChildUrls(child);
+          if (urls.length > 0) {
+            openMultipleTabs(urls);
+          } else {
+            showToast('Folder is empty');
+          }
+        }
+      });
       folderDiv.tabIndex = 0;
       folderDiv.setAttribute('role', 'button');
       folderDiv.setAttribute('aria-haspopup', 'true');
@@ -1595,6 +1788,20 @@
       hideDropIndicator();
       clearFolderDragHighlights();
       scheduleHide();
+    });
+
+    // Middle-click on folder chip: open all bookmarks in folder
+    div.addEventListener('auxclick', (e) => {
+      if (e.button === 1) {
+        e.preventDefault();
+        e.stopPropagation();
+        const urls = getFolderChildUrls(folder);
+        if (urls.length > 0) {
+          openMultipleTabs(urls);
+        } else {
+          showToast('Folder is empty');
+        }
+      }
     });
 
     // Click on folder chip: toggles the folder dropdown

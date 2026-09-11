@@ -184,5 +184,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'CREATE_BOOKMARK') {
+    const parentId = request.parentId ? String(request.parentId) : '1';
+    const title = request.title || 'New Bookmark';
+    const url = request.url;
+
+    if (!url) {
+      sendResponse({ success: false, error: 'URL is required to create a bookmark' });
+      return false;
+    }
+
+    chrome.bookmarks.create({ parentId, title, url })
+      .then(newBookmark => {
+        broadcastToAllTabs({ type: 'BOOKMARKS_UPDATED' });
+        sendResponse({ success: true, bookmark: newBookmark });
+      })
+      .catch(err => {
+        console.error('Failed to create bookmark:', err);
+        sendResponse({ success: false, error: err.message });
+      });
+    return true;
+  }
+
+  if (request.type === 'OPEN_MULTIPLE_TABS') {
+    const urls = Array.isArray(request.urls) ? request.urls.filter(u => typeof u === 'string' && u.trim().length > 0) : [];
+    const limit = Math.min(urls.length, 30);
+    for (let i = 0; i < limit; i++) {
+      chrome.tabs.create({ url: urls[i], active: false }).catch(() => {});
+    }
+    sendResponse({ success: true, opened: limit });
+    return false;
+  }
+
   return false;
 });

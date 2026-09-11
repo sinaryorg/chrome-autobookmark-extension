@@ -33,6 +33,19 @@ The following features and improvements were successfully implemented and shippe
   - Vertical `clientY` item boundary calculation for bookmark reordering on sidebars.
   - Clean horizontal drop line guideline indicators.
 
+### 5. ➕ One-Click "Add Current Tab"
+- **Status**: ✅ **Shipped**
+- **Highlights**:
+  - Dedicated quick-add button in header controls with checkmark transition and toast feedback.
+  - In-dropdown action button to bookmark the active page directly into any target folder.
+  - Context menu option: **"Bookmark Current Tab Here"**.
+
+### 6. 📂 "Open All in Tabs" for Folders
+- **Status**: ✅ **Shipped**
+- **Highlights**:
+  - Right-click context menu option: **"Open All in Tabs (N)"** with active link count.
+  - Middle-click (<kbd>auxclick</kbd>) on folder chips and subfolders to batch-open all links in background tabs.
+
 ---
 
 ## 📦 Released in v1.1.0

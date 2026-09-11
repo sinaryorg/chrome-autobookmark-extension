@@ -186,6 +186,13 @@ Version 1.2.0 introduces full 4-direction edge docking, allowing users to anchor
   - Vertical boundary clamping ensures menus always stay comfortably within the viewport.
 - **🎯 Vertical Drag-and-Drop Organization**:
   - Main bar track reordering automatically adapts to vertical coordinates (`clientY`) with illuminated horizontal drop indicators.
+- **➕ One-Click "Add Current Tab"**:
+  - Dedicated quick-add button in the bar's header controls with animated checkmark feedback and toast notification.
+  - Quick action button inside folder dropdowns to bookmark the current page into any specific folder.
+  - Right-click context menu option: **"Bookmark Current Tab Here"** on any folder.
+- **📂 "Open All in Tabs" for Folders**:
+  - Right-click context menu option: **"Open All in Tabs (N)"** displaying link count.
+  - Middle-click (<kbd>auxclick</kbd>) any folder chip or subfolder to open all bookmarks in background tabs.
 
 ---
 

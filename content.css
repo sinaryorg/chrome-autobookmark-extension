@@ -1536,3 +1536,108 @@
 .ab-theme-modern-light .ab-btn-secondary:hover {
   background: rgba(0, 0, 0, 0.1);
 }
+
+/* Action Button Success State (Green Flash) */
+.ab-action-btn.ab-btn-success {
+  opacity: 1 !important;
+  color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.2) !important;
+  transform: scale(1.1);
+}
+
+/* Dropdown Portal Add Tab Action */
+.ab-dropdown-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+.ab-dropdown-add-btn:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  transform: translateY(-1px);
+}
+.ab-dropdown-add-btn .ab-add-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.ab-dropdown-add-btn.ab-btn-success {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  color: #22c55e !important;
+}
+
+.ab-theme-modern-light .ab-dropdown-add-btn {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1e293b;
+}
+.ab-theme-modern-light .ab-dropdown-add-btn:hover {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.4);
+  color: #0284c7;
+}
+
+/* Disabled Context Item */
+.ab-context-item.ab-disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Floating Toast Feedback Notification */
+.ab-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px) scale(0.95);
+  padding: 7px 16px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 1px rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  z-index: 2147483647;
+  opacity: 0;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ab-toast.ab-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+.ab-toast-icon {
+  width: 15px;
+  height: 15px;
+  color: #22c55e;
+  flex-shrink: 0;
+}
+.ab-theme-modern-light .ab-toast {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
