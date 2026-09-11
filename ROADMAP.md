@@ -4,7 +4,38 @@ This document tracks completed milestones and outlines the planned features, enh
 
 ---
 
-## ✅ Released in v1.1.0
+## ✅ Released in v1.2.0
+
+The following features and improvements were successfully implemented and shipped in **v1.2.0**:
+
+### 1. 🧭 4-Direction Edge Docking (Top, Bottom, Left, Right)
+- **Status**: ✅ **Shipped**
+- **Highlights**:
+  - 4-direction segmented control in the settings popup with live broadcast to all open tabs.
+  - Full-screen edge detection and responsive auto-reveal/hide triggers.
+
+### 2. 📐 Vertical Sidebar Dock Mode (`Left` / `Right`)
+- **Status**: ✅ **Shipped**
+- **Highlights**:
+  - Dedicated `210px` vertical dock layout with `100vh` height.
+  - Integrated header actions, full-width search bar, and vertical bookmark track.
+  - Cohesive borders and soft depth shadows across all 4 themes.
+
+### 3. ✨ Horizontal Flyout Portals
+- **Status**: ✅ **Shipped**
+- **Highlights**:
+  - Folder dropdowns and search modals fly out towards the screen center flush against the sidebar.
+  - Viewport-aware vertical clamping preventing overflow off-screen.
+
+### 4. 🎯 Vertical Drag-and-Drop
+- **Status**: ✅ **Shipped**
+- **Highlights**:
+  - Vertical `clientY` item boundary calculation for bookmark reordering on sidebars.
+  - Clean horizontal drop line guideline indicators.
+
+---
+
+## 📦 Released in v1.1.0
 
 The following features and improvements were successfully implemented and shipped in **v1.1.0**:
 

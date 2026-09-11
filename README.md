@@ -83,9 +83,9 @@ Every release provides two dedicated packages tailored for specific browser engi
 
 👉 **[Download Latest GitHub Release](https://github.com/sinaryorg/chrome-autobookmark-extension/releases/latest)**
 
-#### 📦 For Chrome, Edge, Brave, Opera, Vivaldi (`AutoBookmark-v1.1.0.zip`)
-1. Download **`AutoBookmark-v1.1.0.zip`** from the latest release.
-2. Unzip `AutoBookmark-v1.1.0.zip` into a folder on your computer.
+#### 📦 For Chrome, Edge, Brave, Opera, Vivaldi (`AutoBookmark-v1.2.0.zip`)
+1. Download **`AutoBookmark-v1.2.0.zip`** from the latest release.
+2. Unzip `AutoBookmark-v1.2.0.zip` into a folder on your computer.
 3. Open your browser's extension page:
    - **Chrome**: `chrome://extensions`
    - **Edge**: `edge://extensions`
@@ -94,14 +94,14 @@ Every release provides two dedicated packages tailored for specific browser engi
 4. Toggle ON **Developer mode** (top-right corner switch).
 5. Click **"Load unpacked"** (top-left) and select the extracted folder.
 
-#### 🦊 For Mozilla Firefox (`AutoBookmark-firefox-v1.1.0.zip`)
-1. Download **`AutoBookmark-firefox-v1.1.0.zip`** from the latest release.
+#### 🦊 For Mozilla Firefox (`AutoBookmark-firefox-v1.2.0.zip`)
+1. Download **`AutoBookmark-firefox-v1.2.0.zip`** from the latest release.
 2. Open Firefox and navigate to:
    ```text
    about:debugging#/runtime/this-firefox
    ```
 3. Click **"Load Temporary Add-on..."** (top-right).
-4. Select the downloaded `AutoBookmark-firefox-v1.1.0.zip` file directly (or extract and select its `manifest.json`).
+4. Select the downloaded `AutoBookmark-firefox-v1.2.0.zip` file directly (or extract and select its `manifest.json`).
 5. Done! The AutoBookmark bar is active immediately on Firefox.
 
 ---
@@ -169,7 +169,27 @@ AutoBookmark is developed and maintained by the **[sinary.org](https://sinary.or
 
 ## 📦 Version History & Release Notes
 
-### 🚀 Version 1.1.0 *(Current Release)*
+### 🚀 Version 1.2.0 *(Current Release)*
+
+Version 1.2.0 introduces full 4-direction edge docking, allowing users to anchor AutoBookmark to any edge of the screen as a horizontal bar or vertical sidebar:
+
+- **🧭 4-Direction Edge Docking (Top, Bottom, Left, Right)**:
+  - Choose between Top, Bottom, Left, or Right dock positions from the settings popup.
+  - Seamless slide-in transitions with tailored `translate` transforms for each edge.
+  - Directional hover trigger zones along the corresponding screen edge.
+- **📐 Vertical Sidebar Dock Mode (`Left` / `Right`)**:
+  - Full-height (`100vh`) dock with a streamlined `210px` vertical sidebar layout.
+  - Vertical bookmark scroll track with thin custom scrollbars.
+  - Full-width integrated quick search bar positioned neatly below the header controls.
+- **✨ Horizontal Flyout Dropdowns & Search**:
+  - Folder dropdowns and search results fly out horizontally flush against the sidebar dock towards the screen center with zero clipping.
+  - Vertical boundary clamping ensures menus always stay comfortably within the viewport.
+- **🎯 Vertical Drag-and-Drop Organization**:
+  - Main bar track reordering automatically adapts to vertical coordinates (`clientY`) with illuminated horizontal drop indicators.
+
+---
+
+### 📦 Version 1.1.0
 
 Version 1.1.0 is a major update adding full in-place bookmark management, drag-and-drop reordering, and multi-level subfolder navigation:
 

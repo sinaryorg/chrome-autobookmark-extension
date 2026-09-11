@@ -361,8 +361,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusText = document.getElementById('versionStatusText');
     const actionBtn = document.getElementById('versionActionBtn');
 
+    const sumAbout = document.getElementById('sumAbout');
     if (headerBadge) headerBadge.textContent = currentV;
     if (currentPill) currentPill.textContent = currentV;
+    if (sumAbout) sumAbout.textContent = currentV;
 
     function compareSemVer(vA, vB) {
       const cleanA = (vA || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
